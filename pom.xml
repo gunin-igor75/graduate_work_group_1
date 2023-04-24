@@ -16,6 +16,7 @@
   <description>Application for managing ads</description>
   <properties>
     <java.version>11</java.version>
+    <postgresql.version>42.6.0</postgresql.version>
   </properties>
   <dependencies>
     <!--suppress VulnerableLibrariesLocal -->
@@ -51,6 +52,12 @@
       <groupId>org.springframework.security</groupId>
       <artifactId>spring-security-test</artifactId>
       <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>${postgresql.version}</version>
     </dependency>
   </dependencies>
 
