@@ -1,18 +1,15 @@
 package ru.skypro.homework.dto;
 
-import lombok.*;
-import ru.skypro.homework.model.User;
+import lombok.Builder;
+import lombok.Data;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Data
 @Builder
 public class UserDTO {
 
     private Long id;
 
-    private String email;
+    private String userName;
 
     private String firstName;
 
@@ -22,14 +19,4 @@ public class UserDTO {
 
     private String image;
 
-    public static UserDTO from(User user) {
-        return UserDTO.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .phone(user.getPhone())
-                .image(user.getImage())
-                .build();
-    }
 }

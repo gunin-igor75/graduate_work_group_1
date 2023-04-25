@@ -9,7 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.skypro.homework.dto.RegisterReq;
 import ru.skypro.homework.dto.Role;
-import ru.skypro.homework.model.User;
+import ru.skypro.homework.entity.User;
 import ru.skypro.homework.repository.UserRepository;
 import ru.skypro.homework.service.AuthService;
 
@@ -32,7 +32,7 @@ public class AuthServiceImpl implements AuthService {
 
   @Override
   public boolean login(String userName, String password) {
-    Optional<ru.skypro.homework.model.User> optionalUser = userRepository.findByEmail(userName);
+    Optional<User> optionalUser = userRepository.findByUserName(userName);
     if (optionalUser.isEmpty()) {
       return false;
     }
@@ -47,11 +47,11 @@ public class AuthServiceImpl implements AuthService {
 
   @Override
   public boolean register(RegisterReq registerReq, Role role) {
-    Optional<ru.skypro.homework.model.User> optionalUser = userRepository.findByEmail(registerReq.getUsername());
+    Optional<User> optionalUser = userRepository.findByUserName(registerReq.getUsername());
     if (optionalUser.isPresent()) {
       return false;
     }
-    ru.skypro.homework.model.User user = User.from(registerReq);
+    User user = User.from(registerReq);
     user.setRole(role);
     userRepository.save(user);
     return true;

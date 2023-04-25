@@ -1,9 +1,9 @@
-package ru.skypro.homework.dto.security;
+package ru.skypro.homework.security;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import ru.skypro.homework.model.User;
+import ru.skypro.homework.entity.User;
 
 import java.util.Collection;
 import java.util.List;
@@ -58,7 +58,7 @@ public class SecurityUser implements UserDetails {
 
     public static UserDetails fromUser(User user) {
         return new org.springframework.security.core.userdetails.User(
-                user.getEmail(), user.getPassword(),
+                user.getUserName(), user.getPassword(),
                 true,
                 true,
                 true,

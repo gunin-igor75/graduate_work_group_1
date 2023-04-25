@@ -17,6 +17,7 @@
   <properties>
     <java.version>11</java.version>
     <postgresql.version>42.6.0</postgresql.version>
+    <mapstruct.version>1.5.3.Final</mapstruct.version>
   </properties>
   <dependencies>
     <!--suppress VulnerableLibrariesLocal -->
@@ -59,6 +60,19 @@
       <artifactId>postgresql</artifactId>
       <version>${postgresql.version}</version>
     </dependency>
+
+    <dependency>
+      <groupId>org.mapstruct</groupId>
+      <artifactId>mapstruct</artifactId>
+      <version>${mapstruct.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.mapstruct</groupId>
+      <artifactId>mapstruct-processor</artifactId>
+      <version>${mapstruct.version}</version>
+    </dependency>
+
   </dependencies>
 
   <build>

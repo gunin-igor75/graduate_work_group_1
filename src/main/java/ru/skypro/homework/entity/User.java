@@ -1,4 +1,4 @@
-package ru.skypro.homework.model;
+package ru.skypro.homework.entity;
 
 import lombok.*;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -21,7 +21,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String email;
+    private String userName;
 
     private String firstName;
 
@@ -51,7 +51,7 @@ public class User {
 
     public static User from(RegisterReq registerReq) {
         return User.builder()
-                .email(registerReq.getUsername())
+                .userName(registerReq.getUsername())
                 .password(new BCryptPasswordEncoder(12).encode(registerReq.getPassword()))
                 .firstName(registerReq.getFirstName())
                 .lastName(registerReq.getLastName())
