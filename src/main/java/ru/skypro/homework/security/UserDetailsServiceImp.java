@@ -1,10 +1,10 @@
-package ru.skypro.homework.dto.security;
+package ru.skypro.homework.security;
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import ru.skypro.homework.model.User;
+import ru.skypro.homework.entity.User;
 import ru.skypro.homework.repository.UserRepository;
 
 @Service("userDetailsServiceImp")
@@ -16,8 +16,8 @@ public class UserDetailsServiceImp implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email).orElseThrow(() ->
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User user = userRepository.findByUserName(username).orElseThrow(() ->
                 new UsernameNotFoundException("User does`t exists")
         );
         return SecurityUser.fromUser(user);

@@ -1,8 +1,9 @@
-package ru.skypro.homework.model;
+package ru.skypro.homework.entity;
 
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.Date;
 import java.util.Objects;
 
 @Entity
@@ -13,12 +14,11 @@ import java.util.Objects;
 @AllArgsConstructor
 @Builder
 public class Comment {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Integer createdAt;
+    private Date createdAt;
 
     private String text;
 
