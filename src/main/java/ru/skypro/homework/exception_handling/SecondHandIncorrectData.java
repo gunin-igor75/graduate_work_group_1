@@ -1,6 +1,6 @@
 package ru.skypro.homework.exception_handling;
 
-public class HogwartsIncorrectData {
+public class SecondHandIncorrectData {
     private String info;
 
     public String getInfo() {
