@@ -7,10 +7,9 @@ import ru.skypro.homework.entity.Comment;
 
 @Mapper(componentModel = "spring")
 public interface CommentMapper {
-
-    @Mapping(target = "authorId" , source = "user.id")
-    @Mapping(target = "authorFirstName" , source = "user.firstName")
-    @Mapping(target = "authorImage" , source = "user.image")
-    @Mapping(target = "createdAt" , expression = "java(comment.getCreatedAt().getTime())")
+    @Mapping(target = "author" , source = "users.id")
+    @Mapping(target = "authorFirstName" , source = "users.firstName")
+    @Mapping(target = "authorImage" , source = "users.image")
+    @Mapping(target = "createdAt" , expression = "java(comment.getCreatedAt().toEpochMilli())")
     CommentDTO commentToCommentDTO(Comment comment);
 }

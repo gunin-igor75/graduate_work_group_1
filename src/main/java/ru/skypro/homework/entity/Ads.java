@@ -6,17 +6,16 @@ import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
-@Table(name = "abs")
+@Table(name = "ads")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class Ads {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer pk;
 
     private String image;
 
@@ -25,18 +24,18 @@ public class Ads {
     private String  title;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private User user;
+    private Users users;
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Ads ads = (Ads) o;
-        return Objects.equals(id, ads.id);
+        return Objects.equals(pk, ads.pk);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
+        return Objects.hash(pk);
     }
 }

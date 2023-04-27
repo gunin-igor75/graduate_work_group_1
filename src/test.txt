@@ -1,3 +1,25 @@
+Ads{
+author	integer($int32)
+id автора объявления
+
+image	string
+ссылка на картинку объявления
+
+pk	integer($int32)
+id объявления
+
+price	integer($int32)
+цена объявления
+
+title	string
+заголовок объявления
+
+}
+
+
+
+
+
 Comment{
 author	integer($int32)
 id автора комментария
@@ -17,4 +39,31 @@ id комментария
 text	string
 текст комментария
 
+}
+
+User{
+id	integer($int32)
+id пользователя
+
+email	string
+логин пользователя
+
+firstName	string
+имя пользователя
+
+lastName	string
+фамилия пользователя
+
+phone	string
+телефон пользователя
+
+image	string
+ссылка на аватар пользователя
+
+}
+
+POST users/set_password
+{
+  "currentPassword": "string",
+  "newPassword": "string"
 }

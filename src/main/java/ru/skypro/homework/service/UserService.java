@@ -1,9 +1,11 @@
 package ru.skypro.homework.service;
 
-import ru.skypro.homework.entity.User;
+import ru.skypro.homework.dto.UserDTO;
 
 public interface UserService {
-    User getUser();
+    UserDTO getUser();
 
     void updateAvatarService(String fileName);
+
+    boolean updatePassword(String currentPassword, String newPassword);
 }

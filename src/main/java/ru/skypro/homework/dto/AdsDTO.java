@@ -5,15 +5,15 @@ import lombok.Data;
 
 @Data
 @Builder
-public class AbsDTO {
+public class AdsDTO {
 
-    private Long authorId;
-
-    private Long id;
+    private Integer author;
 
     private String image;
 
-    private  Integer price;
+    private Integer pk;
+
+    private Integer price;
 
     private String  title;
 
