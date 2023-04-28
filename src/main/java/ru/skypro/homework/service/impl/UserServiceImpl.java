@@ -4,7 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import ru.skypro.homework.dto.RegisterReq;
 import ru.skypro.homework.dto.UserDTO;
 import ru.skypro.homework.entity.Users;
 import ru.skypro.homework.exception_handling.UserNotFoundException;
@@ -19,6 +21,17 @@ import ru.skypro.homework.service.UserService;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper mapper;
+    private final PasswordEncoder encoder;
+
+
+    @Override
+    public Users findUserById(Integer id) {
+        return userRepository.findById(id).orElseThrow(
+                () -> {
+                    throw new UserNotFoundException();
+                }
+        );
+    }
 
     @Override
     public UserDTO getUser() {
@@ -35,21 +48,46 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean updatePassword(String currentPassword, String newPassword) {
+        Users authorizedUser = getAuthorizedUser();
+        boolean isPasswordGood = encoder.matches(currentPassword, authorizedUser.getPassword());
+        if (isPasswordGood) {
+            authorizedUser.setPassword(encoder.encode(newPassword));
+            userRepository.save(authorizedUser);
+            return true;
+        }
         return false;
     }
+
+    @Override
+    public UserDTO updateUser(RegisterReq registerReq) {
+        Users authorizedUser = getAuthorizedUser();
+        Integer id = authorizedUser.getId();
+        Users persistentUser = findUserById(id);
+        updateNameAndPhone(persistentUser, registerReq);
+        Users saveUser = userRepository.save(persistentUser);
+        return mapper.userToUserDTO(saveUser);
+    }
+
+    private void updateNameAndPhone(Users persistentUser, RegisterReq registerReq) {
+        persistentUser.setFirstName(registerReq.getFirstName());
+        persistentUser.setLastName(registerReq.getLastName());
+        persistentUser.setPhone(registerReq.getPhone());
+    }
+
+
 
     private Users getAuthorizedUser() {
         String userName = getAuthorizedUserName();
         return userRepository.findByEmail(userName).orElseThrow(
                 () -> {
-                    throw  new UserNotFoundException();
+                    throw new UserNotFoundException();
                 }
         );
     }
 
     private String getAuthorizedUserName() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Users principal =(Users) authentication.getPrincipal();
+        Users principal = (Users) authentication.getPrincipal();
         return principal.getUsername();
     }
 }

@@ -7,9 +7,9 @@ import ru.skypro.homework.entity.Ads;
 
 
 @Mapper(componentModel = "spring")
-public interface AbsMapper {
+public interface AdsMapper {
 
     @Mapping(target = "author", source = "users.id")
-    AdsDTO absToAbsDTO(Ads ads);
-    Ads absDTOToAbs(AdsDTO adsDTO);
+    AdsDTO adsToAdsDTO(Ads ads);
+    Ads abdDTOToAds(AdsDTO adsDTO);
 }
