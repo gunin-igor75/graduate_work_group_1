@@ -21,8 +21,8 @@ import java.util.Objects;
 public class Users implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
 
+    private Integer id;
     private String email;
 
     private String firstName;

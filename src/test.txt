@@ -67,3 +67,13 @@ POST users/set_password
   "currentPassword": "string",
   "newPassword": "string"
 }
+
+PATH users/me
+{
+  "id": 0,
+  "email": "string",
+  "firstName": "string",
+  "lastName": "string",
+  "phone": "string",
+  "image": "string"
+}
