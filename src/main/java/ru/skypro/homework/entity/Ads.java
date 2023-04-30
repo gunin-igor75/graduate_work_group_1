@@ -23,6 +23,8 @@ public class Ads {
 
     private String  title;
 
+    private String description;
+
     @ManyToOne(fetch = FetchType.LAZY)
     private Users users;
 
@@ -31,11 +33,11 @@ public class Ads {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Ads ads = (Ads) o;
-        return Objects.equals(pk, ads.pk);
+        return Objects.equals(pk, ads.pk) && Objects.equals(image, ads.image) && Objects.equals(price, ads.price) && Objects.equals(title, ads.title) && Objects.equals(description, ads.description) && Objects.equals(users, ads.users);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(pk);
+        return Objects.hash(pk, image, price, title, description, users);
     }
 }
