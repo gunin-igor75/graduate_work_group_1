@@ -12,6 +12,7 @@ import ru.skypro.homework.dto.UserDTO;
 import ru.skypro.homework.entity.Avatar;
 import ru.skypro.homework.entity.Users;
 import ru.skypro.homework.exception_handling.FileCreateAndUpLoadException;
+import ru.skypro.homework.exception_handling.FileNotException;
 import ru.skypro.homework.exception_handling.UserNotFoundException;
 import ru.skypro.homework.mapper.UserMapper;
 import ru.skypro.homework.repository.UserRepository;
@@ -22,6 +23,7 @@ import javax.transaction.Transactional;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Objects;
 
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
@@ -36,10 +38,10 @@ public class UserServiceImpl implements UserService {
     private final UserMapper mapper;
     private final PasswordEncoder encoder;
 
-    @Value("{users.avatar.dir.path}")
+    @Value("${users.avatar.dir.path}")
     private String DIRECTORY_AVATAR;
 
-    @Value("{users.image.endpoint}")
+    @Value("${users.image.endpoint}")
     private String ENDPOINT_IMAGE;
 
 
@@ -66,14 +68,26 @@ public class UserServiceImpl implements UserService {
         Path filePath = Path.of(DIRECTORY_AVATAR, id + "." +
                 getExtension(Objects.requireNonNull(file.getOriginalFilename())));
         upLoadFile(file, filePath);
-        user.setImage(ENDPOINT_IMAGE + id);
         Avatar avatar = avatarService.getCurrentAvatarOrNew(id);
+        checkExistFileAndDelete(avatar);
         avatar.setUsers(user);
         avatar.setFilePath(filePath.toString());
         avatar.setFileSize(file.getSize());
         avatar.setMediaType(file.getContentType());
-        avatarService.avatarCreate(avatar);
-        userRepository.save(user);
+        avatarService.avatarCreateOrUpdate(avatar);
+        checkUserAvatarExist(user);
+    }
+
+    private void checkExistFileAndDelete(Avatar avatar) {
+        String filePath = avatar.getFilePath();
+        if (filePath != null) {
+            Path path = Paths.get(filePath);
+            try {
+                Files.deleteIfExists(path);
+            } catch (IOException e) {
+                throw new FileNotException();
+            }
+        }
     }
 
     private void upLoadFile(MultipartFile file, Path filePath) {
@@ -90,6 +104,13 @@ public class UserServiceImpl implements UserService {
         } catch (IOException e) {
             log.error("Error create or upload file");
             throw new FileCreateAndUpLoadException();
+        }
+    }
+
+    private void checkUserAvatarExist(Users user) {
+        if (user.getImage() == null) {
+            user.setImage(ENDPOINT_IMAGE + user.getId());
+            userRepository.save(user);
         }
     }
 

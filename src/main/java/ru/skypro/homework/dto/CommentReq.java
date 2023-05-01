@@ -9,5 +9,4 @@ import lombok.Data;
 public class CommentReq {
 
     private String text;
-
 }

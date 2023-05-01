@@ -60,7 +60,7 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/users/image/{id}")
+    @GetMapping("/image/{id}")
     public void downLoadAvatar(@PathVariable("id") Integer id,
                                HttpServletResponse response) {
         Avatar avatar = avatarService.getAvatarById(id);

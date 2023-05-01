@@ -27,8 +27,8 @@ public class AvatarServiceImp implements AvatarService {
     }
 
     @Override
-    public void avatarCreate(Avatar avatar) {
-        if (avatar.getId() != null) {
+    public void avatarCreateOrUpdate(Avatar avatar) {
+        if (avatar == null) {
             throw new AvatarNotFoundException();
         }
         avatarRepository.save(avatar);
