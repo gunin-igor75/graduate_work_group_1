@@ -77,3 +77,13 @@ PATH users/me
   "phone": "string",
   "image": "string"
 }
+
+
+{
+  "author": 0,
+  "authorImage": "string",
+  "authorFirstName": "string",
+  "createdAt": 0,
+  "pk": 0,
+  "text": "string"
+}

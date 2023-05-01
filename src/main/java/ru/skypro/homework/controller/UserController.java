@@ -5,11 +5,21 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import ru.skypro.homework.dto.RegisterReq;
+import ru.skypro.homework.dto.NewPassword;
 import ru.skypro.homework.dto.UserDTO;
+import ru.skypro.homework.entity.Avatar;
+import ru.skypro.homework.exception_handling.FileNotException;
+import ru.skypro.homework.service.AvatarService;
 import ru.skypro.homework.service.UserService;
 
-import java.util.Map;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
@@ -19,11 +29,12 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 @CrossOrigin(value = "http://localhost:3000")
 public class UserController {
     private final UserService userService;
+
+    private final AvatarService avatarService;
     @PostMapping("/set_password")
-    public ResponseEntity<?> setPassword(@RequestBody Map<String, String> map) {
-        String currentPassword = map.get("currentPassword");
-        String newPassword = map.get("newPassword");
-        boolean isUpdatePassword = userService.updatePassword(currentPassword, newPassword);
+    public ResponseEntity<?> setPassword(@RequestBody NewPassword pairPassword) {
+        boolean isUpdatePassword = userService.updatePassword(pairPassword.getCurrentPassword(),
+                pairPassword.getNewPassword());
         return isUpdatePassword ? ResponseEntity.ok().build()
                 : ResponseEntity.status(NOT_FOUND).build();
     }
@@ -35,15 +46,33 @@ public class UserController {
     }
 
     @PatchMapping("/me")
-    public ResponseEntity<UserDTO> updateUser(@RequestBody RegisterReq registerReq) {
-        UserDTO newUserDTO = userService.updateUser(registerReq);
+    public ResponseEntity<UserDTO> updateUser(@RequestBody UserDTO userDTO) {
+        UserDTO newUserDTO = userService.updateUser(userDTO);
         return ResponseEntity.ok(newUserDTO);
     }
 
     @PatchMapping(path = "/me/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<String> updateAvatarUser(@RequestPart(name = "image") MultipartFile image) {
-        String fileName = image.getOriginalFilename();
-        userService.updateAvatarService(fileName);
-        return ResponseEntity.ok(fileName);
+    public ResponseEntity<?> updateAvatarUser(@RequestPart(name = "image") MultipartFile image) {
+        if (image.getSize() == 0) {
+            return ResponseEntity.badRequest().build();
+        }
+        userService.updateAvatarService(image);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/image/{id}")
+    public void downLoadAvatar(@PathVariable("id") Integer id,
+                               HttpServletResponse response) {
+        Avatar avatar = avatarService.getAvatarById(id);
+        Path path = Paths.get(avatar.getFilePath());
+        try (InputStream in = Files.newInputStream(path);
+             OutputStream out = response.getOutputStream()) {
+            response.setStatus(200);
+            response.setContentType(avatar.getMediaType());
+            response.setContentLength((int) avatar.getFileSize());
+            in.transferTo(out);
+        } catch (IOException e) {
+            throw new FileNotException();
+        }
     }
 }

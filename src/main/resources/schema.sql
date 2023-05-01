@@ -28,3 +28,19 @@ create table if not exists comment
     ads_pk integer constraint absId references ads,
     users_id integer constraint uasersId references users
 );
+
+create table if not exists avatar
+(
+    id integer not null  primary key  constraint user_id  references users,
+    file_path  varchar(255),
+    file_size  bigint,
+    media_type varchar(255)
+);
+
+create table if not exists picture
+(
+    id integer not null  primary key  constraint ads_id  references ads,
+    file_path  varchar(255),
+    file_size  bigint,
+    media_type varchar(255)
+);

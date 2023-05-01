@@ -23,6 +23,8 @@ public class Ads {
 
     private String  title;
 
+    private String description;
+
     @ManyToOne(fetch = FetchType.LAZY)
     private Users users;
 
