@@ -41,7 +41,7 @@ public class WebSecurityConfig {
                                         .permitAll()
                                         .mvcMatchers(HttpMethod.GET, "/ads")
                                         .permitAll()
-                                        .mvcMatchers(HttpMethod.OPTIONS, "/ads/**", "/users/**")
+                                        .mvcMatchers("/ads/**", "/users/**")
                                         .authenticated())
                 .cors()
                 .and()

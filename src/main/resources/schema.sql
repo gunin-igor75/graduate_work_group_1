@@ -17,6 +17,7 @@ create table if not exists ads
     image   varchar(255),
     price   integer,
     title   varchar(255),
+    description varchar(255),
     users_id integer constraint userId references users
 );
 
