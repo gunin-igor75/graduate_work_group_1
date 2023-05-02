@@ -6,10 +6,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import ru.skypro.homework.dto.AdsDTO;
-import ru.skypro.homework.dto.AdsReq;
-import ru.skypro.homework.dto.FullAds;
-import ru.skypro.homework.dto.ResponseWrapperAds;
+import ru.skypro.homework.dto.*;
 import ru.skypro.homework.service.AdsService;
 
 
@@ -28,7 +25,7 @@ public class AdsController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<AdsDTO> createAds(@RequestPart(name = "properties") AdsDTO adsDTO,
+    public ResponseEntity<AdsDTO> createAds(@RequestPart(name = "properties") CreateAds createAds,
                                             @RequestPart(name = "image") MultipartFile file) {
         return ResponseEntity.status(201).body(new AdsDTO());
     }
@@ -45,7 +42,7 @@ public class AdsController {
 
     @PatchMapping("{id}")
     public ResponseEntity<AdsDTO> updateAds(@PathVariable Integer id,
-                                            @RequestBody AdsReq adsReq) {
+                                            @RequestBody CreateAds createAds) {
         return ResponseEntity.ok(new AdsDTO());
     }
 
