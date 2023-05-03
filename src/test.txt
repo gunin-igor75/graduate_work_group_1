@@ -1,0 +1,89 @@
+Ads{
+author	integer($int32)
+id автора объявления
+
+image	string
+ссылка на картинку объявления
+
+pk	integer($int32)
+id объявления
+
+price	integer($int32)
+цена объявления
+
+title	string
+заголовок объявления
+
+}
+
+
+
+
+
+Comment{
+author	integer($int32)
+id автора комментария
+
+authorImage	string
+ссылка на аватар автора комментария
+
+authorFirstName	string
+имя создателя комментария
+
+createdAt	integer($int64)
+дата и время создания комментария в миллисекундах с 00:00:00 01.01.1970
+
+pk	integer($int32)
+id комментария
+
+text	string
+текст комментария
+
+}
+
+User{
+id	integer($int32)
+id пользователя
+
+email	string
+логин пользователя
+
+firstName	string
+имя пользователя
+
+lastName	string
+фамилия пользователя
+
+phone	string
+телефон пользователя
+
+image	string
+ссылка на аватар пользователя
+
+}
+
+POST users/set_password
+{
+  "currentPassword": "string",
+  "newPassword": "string"
+}
+
+PATH users/me
+{
+  "id": 0,
+  "email": "string",
+  "firstName": "string",
+  "lastName": "string",
+  "phone": "string",
+  "image": "string"
+}
+
+
+{
+  "author": 0,
+  "authorImage": "string",
+  "authorFirstName": "string",
+  "createdAt": 0,
+  "pk": 0,
+  "text": "string"
+}

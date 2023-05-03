@@ -30,7 +30,7 @@ paths:
       tags:
         - Пользователи
       summary: 'Получить информацию об авторизованном пользователе'
-      operationId: getUser
+      operationId: getUsers
       responses:
         '200':
           content:
