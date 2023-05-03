@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class AdsReq {
+public class CreateAds {
 
     private String description;
 

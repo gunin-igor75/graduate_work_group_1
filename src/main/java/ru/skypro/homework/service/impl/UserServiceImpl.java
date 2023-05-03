@@ -78,6 +78,40 @@ public class UserServiceImpl implements UserService {
         checkUserAvatarExist(user);
     }
 
+
+    @Override
+    public boolean updatePassword(String currentPassword, String newPassword) {
+        Users authorizedUser = getAuthorizedUser();
+        boolean isPasswordGood = encoder.matches(currentPassword, authorizedUser.getPassword());
+        if (isPasswordGood) {
+            authorizedUser.setPassword(encoder.encode(newPassword));
+            userRepository.save(authorizedUser);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public UserDTO updateUser(UserDTO userDTO) {
+        Integer id = userDTO.getId();
+        Users persistentUser = findUserById(id);
+        Users users = mapper.userDTOToUsers(userDTO);
+        users.setPassword(persistentUser.getPassword());
+        users.setRole(persistentUser.getRole());
+        Users saveUser = userRepository.save(users);
+        return mapper.userToUserDTO(saveUser);
+    }
+
+    @Override
+    public Users getAuthorizedUser() {
+        String userName = getAuthorizedUserName();
+        return userRepository.findByEmail(userName).orElseThrow(
+                () -> {
+                    throw new UserNotFoundException();
+                }
+        );
+    }
+
     private void checkExistFileAndDelete(Avatar avatar) {
         String filePath = avatar.getFilePath();
         if (filePath != null) {
@@ -112,45 +146,6 @@ public class UserServiceImpl implements UserService {
             user.setImage(ENDPOINT_IMAGE + user.getId());
             userRepository.save(user);
         }
-    }
-
-    @Override
-    public boolean updatePassword(String currentPassword, String newPassword) {
-        Users authorizedUser = getAuthorizedUser();
-        boolean isPasswordGood = encoder.matches(currentPassword, authorizedUser.getPassword());
-        if (isPasswordGood) {
-            authorizedUser.setPassword(encoder.encode(newPassword));
-            userRepository.save(authorizedUser);
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public UserDTO updateUser(UserDTO userDTO) {
-        Users authorizedUser = getAuthorizedUser();
-        Integer id = authorizedUser.getId();
-        Users persistentUser = findUserById(id);
-        updateNameAndPhone(persistentUser, userDTO);
-        Users saveUser = userRepository.save(persistentUser);
-        return mapper.userToUserDTO(saveUser);
-    }
-
-    private void updateNameAndPhone(Users persistentUser, UserDTO userDTO) {
-        persistentUser.setFirstName(userDTO.getFirstName());
-        persistentUser.setLastName(userDTO.getLastName());
-        persistentUser.setPhone(userDTO.getPhone());
-    }
-
-
-    @Override
-    public Users getAuthorizedUser() {
-        String userName = getAuthorizedUserName();
-        return userRepository.findByEmail(userName).orElseThrow(
-                () -> {
-                    throw new UserNotFoundException();
-                }
-        );
     }
 
     private String getAuthorizedUserName() {
