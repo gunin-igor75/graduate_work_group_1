@@ -9,6 +9,8 @@ import org.springframework.web.multipart.MultipartFile;
 import ru.skypro.homework.dto.*;
 import ru.skypro.homework.service.AdsService;
 
+import java.io.IOException;
+
 
 @Slf4j
 @RequiredArgsConstructor
@@ -17,6 +19,17 @@ import ru.skypro.homework.service.AdsService;
 @RequestMapping("/ads")
 public class AdsController {
     private final AdsService adsService;
+    @GetMapping("{id}")
+    public ResponseEntity<FullAds> getAdsById(@PathVariable Integer id) {
+        FullAds fullAds = adsService.getById(id);
+        return ResponseEntity.ok(fullAds);
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<ResponseWrapperAds> getMeAds() {
+        ResponseWrapperAds meAds = adsService.getMeAds();
+        return ResponseEntity.ok(meAds);
+    }
 
     @GetMapping
     public ResponseEntity<ResponseWrapperAds> getAllAds() {
@@ -25,18 +38,15 @@ public class AdsController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<AdsDTO> createAds(@RequestPart(name = "properties") CreateAds createAds,
-                                            @RequestPart(name = "image") MultipartFile file) {
-        return ResponseEntity.status(201).body(new AdsDTO());
-    }
-
-    @GetMapping("{id}")
-    public ResponseEntity<FullAds> getAds(@PathVariable Integer id) {
-        return ResponseEntity.ok(new FullAds());
+    public ResponseEntity<AdsReq> createAds(@RequestPart(name = "properties") CreateAds createAds,
+                                            @RequestPart(name = "image") MultipartFile file) throws IOException {
+        AdsReq adsReq = adsService.createAds(createAds,file);
+        return ResponseEntity.status(201).body(adsReq);
     }
 
     @DeleteMapping("{id}")
     public ResponseEntity<?> deleteAds(@PathVariable Integer id) {
+        adsService.deleteAds(id);
         return ResponseEntity.ok().build();
     }
 
@@ -44,12 +54,6 @@ public class AdsController {
     public ResponseEntity<AdsDTO> updateAds(@PathVariable Integer id,
                                             @RequestBody CreateAds createAds) {
         return ResponseEntity.ok(new AdsDTO());
-    }
-
-    @GetMapping("/me")
-    public ResponseEntity<ResponseWrapperAds> getAdsMe() {
-        ResponseWrapperAds allAds = adsService.getAllAds();
-        return ResponseEntity.ok(allAds);
     }
 
     @PatchMapping(path = "{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
