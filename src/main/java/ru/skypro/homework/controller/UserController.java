@@ -3,6 +3,7 @@ package ru.skypro.homework.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ru.skypro.homework.dto.NewPassword;
@@ -27,12 +28,14 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 @RequestMapping("/users")
 @RequiredArgsConstructor
 @CrossOrigin(value = "http://localhost:3000")
+@Validated
 public class UserController {
     private final UserService userService;
 
     private final AvatarService avatarService;
+
     @PostMapping("/set_password")
-    public ResponseEntity<?> setPassword(@RequestBody NewPassword pairPassword) {
+    public ResponseEntity<?> setPassword(@Validated @RequestBody NewPassword pairPassword) {
         boolean isUpdatePassword = userService.updatePassword(pairPassword.getCurrentPassword(),
                 pairPassword.getNewPassword());
         return isUpdatePassword ? ResponseEntity.ok().build()
@@ -46,14 +49,14 @@ public class UserController {
     }
 
     @PatchMapping("/me")
-    public ResponseEntity<UserDTO> updateUser(@RequestBody UserDTO userDTO) {
+    public ResponseEntity<UserDTO> updateUser(@Validated @RequestBody UserDTO userDTO) {
         UserDTO newUserDTO = userService.updateUser(userDTO);
         return ResponseEntity.ok(newUserDTO);
     }
 
     @PatchMapping(path = "/me/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> updateAvatarUser(@RequestPart(name = "image") MultipartFile image) {
-        if (image.getSize() == 0) {
+        if (checkFile(image)) {
             return ResponseEntity.badRequest().build();
         }
         userService.updateAvatarService(image);
@@ -74,5 +77,14 @@ public class UserController {
         } catch (IOException e) {
             throw new FileNotException();
         }
+    }
+
+    private boolean checkFile(MultipartFile file) {
+        String filename = file.getOriginalFilename();
+        return file.getSize() != 0
+                && filename != null
+                && (filename.endsWith(".png")
+                || filename.endsWith(".swg")
+                || filename.endsWith(".jpg"));
     }
 }

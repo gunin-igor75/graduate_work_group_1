@@ -55,9 +55,26 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDTO getUser() {
+    public boolean updatePassword(String currentPassword, String newPassword) {
         Users authorizedUser = getAuthorizedUser();
-        return mapper.userToUserDTO(authorizedUser);
+        boolean isPasswordGood = encoder.matches(currentPassword, authorizedUser.getPassword());
+        if (isPasswordGood) {
+            authorizedUser.setPassword(encoder.encode(newPassword));
+            userRepository.save(authorizedUser);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public UserDTO updateUser(UserDTO userDTO) {
+        Integer id = userDTO.getId();
+        Users persistentUser = findUserById(id);
+        Users users = mapper.userDTOToUsers(userDTO);
+        users.setPassword(persistentUser.getPassword());
+        users.setRole(persistentUser.getRole());
+        Users saveUser = userRepository.save(users);
+        return mapper.userToUserDTO(saveUser);
     }
 
     @Override
@@ -80,27 +97,11 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public boolean updatePassword(String currentPassword, String newPassword) {
+    public UserDTO getUser() {
         Users authorizedUser = getAuthorizedUser();
-        boolean isPasswordGood = encoder.matches(currentPassword, authorizedUser.getPassword());
-        if (isPasswordGood) {
-            authorizedUser.setPassword(encoder.encode(newPassword));
-            userRepository.save(authorizedUser);
-            return true;
-        }
-        return false;
+        return mapper.userToUserDTO(authorizedUser);
     }
 
-    @Override
-    public UserDTO updateUser(UserDTO userDTO) {
-        Integer id = userDTO.getId();
-        Users persistentUser = findUserById(id);
-        Users users = mapper.userDTOToUsers(userDTO);
-        users.setPassword(persistentUser.getPassword());
-        users.setRole(persistentUser.getRole());
-        Users saveUser = userRepository.save(users);
-        return mapper.userToUserDTO(saveUser);
-    }
 
     @Override
     public Users getAuthorizedUser() {

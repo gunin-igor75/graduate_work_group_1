@@ -5,11 +5,11 @@ import ru.skypro.homework.dto.CommentReq;
 import ru.skypro.homework.dto.ResponseWrapperComment;
 
 public interface CommentService {
-    ResponseWrapperComment getCommentByIdAds(Integer id);
+    ResponseWrapperComment getCommentByIdAds(int id);
 
-    boolean deleteComment(Integer adId, Integer commentId);
+    boolean deleteComment(int adId, int commentId);
 
-    CommentDTO updateComment(Integer adId, Integer commentId, CommentReq commentReq);
+    CommentDTO updateComment(int adId, int commentId, CommentReq commentReq);
 
-    CommentDTO createComment(Integer aiD, CommentReq commentReq);
+    CommentDTO createComment(int id, CommentReq commentReq);
 }

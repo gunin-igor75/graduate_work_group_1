@@ -31,7 +31,7 @@ public class CommentServiceImp implements CommentService {
     private final CommentMapper mapper;
 
     @Override
-    public ResponseWrapperComment getCommentByIdAds(Integer id) {
+    public ResponseWrapperComment getCommentByIdAds(int id) {
         List<CommentDTO> comments = commentRepository.findByAds_Pk(id).stream()
                 .map(mapper::commentToCommentDTO)
                 .collect(Collectors.toList());
@@ -47,7 +47,7 @@ public class CommentServiceImp implements CommentService {
     }
 
     @Override
-    public boolean deleteComment(Integer adId, Integer commentId) {
+    public boolean deleteComment(int adId, int commentId) {
         Comment comment = findComment(commentId);
         try {
             commentRepository.delete(comment);
@@ -59,7 +59,7 @@ public class CommentServiceImp implements CommentService {
     }
 
     @Override
-    public CommentDTO updateComment(Integer adId, Integer commentId, CommentReq commentReq) {
+    public CommentDTO updateComment(int adId, int commentId, CommentReq commentReq) {
         Comment comment = findComment(commentId);
         comment.setText(commentReq.getText());
         comment.setCreatedAt(Instant.now());
@@ -68,8 +68,8 @@ public class CommentServiceImp implements CommentService {
     }
 
     @Override
-    public CommentDTO createComment(Integer aiD, CommentReq commentReq) {
-        Ads ads = adsRepository.getReferenceById(aiD);
+    public CommentDTO createComment(int id, CommentReq commentReq) {
+        Ads ads = adsRepository.getReferenceById(id);
         Users user = userService.getAuthorizedUser();
         Comment comment = new Comment();
         comment.setAds(ads);
