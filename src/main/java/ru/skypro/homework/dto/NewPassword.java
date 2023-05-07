@@ -1,8 +1,9 @@
 package ru.skypro.homework.dto;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
+
+import javax.validation.constraints.NotNull;
 
 @Data
 public class NewPassword {

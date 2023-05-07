@@ -8,19 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ru.skypro.homework.dto.NewPassword;
 import ru.skypro.homework.dto.UserDTO;
-import ru.skypro.homework.entity.Avatar;
-import ru.skypro.homework.exception_handling.FileNotException;
-import ru.skypro.homework.service.AvatarService;
 import ru.skypro.homework.service.UserService;
-
-
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import ru.skypro.homework.util.FileManager;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
@@ -31,8 +20,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 @Validated
 public class UserController {
     private final UserService userService;
-
-    private final AvatarService avatarService;
+    private final FileManager fileManager;
 
     @PostMapping("/set_password")
     public ResponseEntity<?> setPassword(@Validated @RequestBody NewPassword pairPassword) {
@@ -56,35 +44,10 @@ public class UserController {
 
     @PatchMapping(path = "/me/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> updateAvatarUser(@RequestPart(name = "image") MultipartFile image) {
-        if (checkFile(image)) {
+        if (fileManager.checkFile(image)) {
             return ResponseEntity.badRequest().build();
         }
-        userService.updateAvatarService(image);
+        userService.createOrUpdateAvatar(image);
         return ResponseEntity.ok().build();
-    }
-
-    @GetMapping("/image/{id}")
-    public void downLoadAvatar(@PathVariable("id") Integer id,
-                               HttpServletResponse response) {
-        Avatar avatar = avatarService.getAvatarById(id);
-        Path path = Paths.get(avatar.getFilePath());
-        try (InputStream in = Files.newInputStream(path);
-             OutputStream out = response.getOutputStream()) {
-            response.setStatus(200);
-            response.setContentType(avatar.getMediaType());
-            response.setContentLength((int) avatar.getFileSize());
-            in.transferTo(out);
-        } catch (IOException e) {
-            throw new FileNotException();
-        }
-    }
-
-    private boolean checkFile(MultipartFile file) {
-        String filename = file.getOriginalFilename();
-        return file.getSize() != 0
-                && filename != null
-                && (filename.endsWith(".png")
-                || filename.endsWith(".swg")
-                || filename.endsWith(".jpg"));
     }
 }

@@ -7,5 +7,5 @@ public interface AvatarService {
 
     Avatar getAvatarById(Integer id);
 
-    void avatarCreateOrUpdate(Avatar avatar);
+    void createAvatar(Avatar avatar);
 }

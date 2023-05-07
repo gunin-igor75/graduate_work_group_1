@@ -4,6 +4,7 @@ package ru.skypro.homework.entity;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.Objects;
 
 
 @Getter
@@ -11,24 +12,17 @@ import javax.persistence.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Entity(name = "picture")
-public class Picture {
-
-    @Id
-    private Integer id;
-
-    @Column
-    private String filePath;
-
-    @Column
-    private String mediaType;
-
-    @Column
-    private long fileSize;
+@Entity
+public class Picture extends Photo{
 
     @OneToOne(fetch = FetchType.LAZY)
-    @MapsId
-    @JoinColumn(name = "id")
     private Ads ads;
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Picture picture = (Picture) o;
+        return Objects.equals(super.getId(), picture.getId());
+    }
 }
