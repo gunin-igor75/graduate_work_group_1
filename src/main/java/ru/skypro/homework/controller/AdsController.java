@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ru.skypro.homework.dto.*;
@@ -16,6 +17,7 @@ import ru.skypro.homework.util.FileManager;
 @CrossOrigin(value = "http://localhost:3000")
 @RestController
 @RequestMapping("/ads")
+@Validated
 public class AdsController {
     private final AdsService adsService;
 
@@ -28,7 +30,7 @@ public class AdsController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<AdsDTO> createAds(@RequestPart(name = "properties") CreateAds createAds,
+    public ResponseEntity<AdsDTO> createAds(@RequestPart(name = "properties") @Validated CreateAds createAds,
                                             @RequestPart(name = "image") MultipartFile file) {
         if (!fileManager.checkFile(file)) {
             return ResponseEntity.badRequest().build();
@@ -51,7 +53,7 @@ public class AdsController {
 
     @PatchMapping("{id}")
     public ResponseEntity<AdsDTO> updateAds(@PathVariable int id,
-                                            @RequestBody CreateAds createAds) {
+                                            @RequestBody @Validated CreateAds createAds) {
         AdsDTO adsDTO = adsService.updateAds(id, createAds);
         return ResponseEntity.ok(adsDTO);
     }
