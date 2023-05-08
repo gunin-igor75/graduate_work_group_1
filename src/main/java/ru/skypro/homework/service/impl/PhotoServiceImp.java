@@ -18,10 +18,12 @@ public class PhotoServiceImp implements PhotoService {
 
     @Override
     public Photo getPhoto(int id) {
-        return photoRepository.getReferenceById(id);
+        return photoRepository.findById(id).orElseThrow(
+                PhotoNotFoundException::new
+        );
     }
     @Override
-    public Photo getCurrentAvatarOrNew(Integer id) {
+    public Photo getCurrentAvatarOrNew(int id) {
         return photoRepository.findAvatarByUsersId(id).orElse(new Avatar());
     }
 
@@ -40,5 +42,12 @@ public class PhotoServiceImp implements PhotoService {
             throw  new PhotoNotFoundException();
         }
         return picture.get();
+    }
+
+    @Override
+    public void deletePhoto(Photo photo) {
+        Integer id = photo.getId();
+        Photo photoPersistent = getPhoto(id);
+        photoRepository.delete(photoPersistent);
     }
 }

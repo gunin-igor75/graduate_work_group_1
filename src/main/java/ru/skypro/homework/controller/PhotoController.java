@@ -23,7 +23,7 @@ public class PhotoController {
 
     private final PhotoService photoService;
 
-    @GetMapping("/{id}")
+    @GetMapping("{id}")
     public void downLoadImage(@PathVariable("id") int id,
                               HttpServletResponse response) {
         Photo photo =  photoService.getPhoto(id);

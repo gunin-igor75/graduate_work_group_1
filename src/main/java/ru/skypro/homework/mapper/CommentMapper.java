@@ -14,5 +14,4 @@ public interface CommentMapper {
     @Mapping(target = "createdAt" , expression = "java(comment.getCreatedAt().toEpochMilli())")
     CommentDTO commentToCommentDTO(Comment comment);
 
-    Comment commentReqToComment(CommentReq commentReq);
 }

@@ -1,15 +1,26 @@
 package ru.skypro.homework.service;
 
 import ru.skypro.homework.dto.CommentDTO;
-import ru.skypro.homework.dto.CommentReq;
 import ru.skypro.homework.dto.ResponseWrapperComment;
+import ru.skypro.homework.entity.Comment;
+
+import javax.transaction.Transactional;
+import java.util.List;
 
 public interface CommentService {
-    ResponseWrapperComment getCommentByIdAds(int id);
+    ResponseWrapperComment getResponseCommentByIdAds(int id);
 
-    boolean deleteComment(int adId, int commentId);
+    Comment findComment(Integer pk);
 
-    CommentDTO updateComment(int adId, int commentId, CommentReq commentReq);
+    boolean deleteComment(int commentId);
 
-    CommentDTO createComment(int id, CommentReq commentReq);
+    @Transactional
+    void deleteComments(List<Comment> comments);
+
+    CommentDTO updateComment(int adId, int commentId, CommentDTO commentDTO);
+
+    CommentDTO createComment(int id, CommentDTO commentDTO);
+
+    List<Comment> getCommentByIdAds(int id);
+
 }

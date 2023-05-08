@@ -30,7 +30,7 @@ public class AdsController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AdsDTO> createAds(@RequestPart(name = "properties") CreateAds createAds,
                                             @RequestPart(name = "image") MultipartFile file) {
-        if (fileManager.checkFile(file)) {
+        if (!fileManager.checkFile(file)) {
             return ResponseEntity.badRequest().build();
         }
         AdsDTO adsDTO = adsService.createAds(createAds, file);
@@ -39,7 +39,7 @@ public class AdsController {
 
     @GetMapping("{id}")
     public ResponseEntity<FullAds> getAds(@PathVariable int id) {
-        FullAds ads = adsService.getAds(id);
+        FullAds ads = adsService.getFullAds(id);
         return ResponseEntity.ok(ads);
     }
 

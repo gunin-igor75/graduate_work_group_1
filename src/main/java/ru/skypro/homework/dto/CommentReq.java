@@ -16,3 +16,4 @@ public class CommentReq {
     @Length(min = 2, max = 255, message = "Text Max 255 Symbol")
     private String text;
 }
+

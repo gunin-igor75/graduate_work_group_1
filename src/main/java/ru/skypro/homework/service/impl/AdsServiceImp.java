@@ -9,13 +9,12 @@ import ru.skypro.homework.dto.AdsDTO;
 import ru.skypro.homework.dto.CreateAds;
 import ru.skypro.homework.dto.FullAds;
 import ru.skypro.homework.dto.ResponseWrapperAds;
-import ru.skypro.homework.entity.Ads;
-import ru.skypro.homework.entity.Photo;
-import ru.skypro.homework.entity.Picture;
-import ru.skypro.homework.entity.Users;
+import ru.skypro.homework.entity.*;
+import ru.skypro.homework.exception_handling.AdsNotFoundException;
 import ru.skypro.homework.mapper.AdsMapper;
 import ru.skypro.homework.repository.AdsRepository;
 import ru.skypro.homework.service.AdsService;
+import ru.skypro.homework.service.CommentService;
 import ru.skypro.homework.service.PhotoService;
 import ru.skypro.homework.service.UserService;
 import ru.skypro.homework.util.FileManager;
@@ -33,6 +32,7 @@ public class AdsServiceImp implements AdsService {
     private final FileManager fileManager;
     private final PhotoService photoService;
     private final UserService userService;
+    private final CommentService commentService;
     private final AdsMapper mapper;
 
     @Value("${ads.picture.dir.path}")
@@ -40,6 +40,8 @@ public class AdsServiceImp implements AdsService {
 
     @Value("${image.endpoint}")
     private String ENDPOINT_IMAGE;
+
+
 
     @Override
     public ResponseWrapperAds getAllAds() {
@@ -58,6 +60,8 @@ public class AdsServiceImp implements AdsService {
         Path filePath = fileManager.getRandomPath(file, DIRECTORY_PICTURE);
         fileManager.upLoadFile(file, filePath);
         Ads ads = mapper.createAdsToAds(createAds);
+        Users user = userService.getAuthorizedUser();
+        ads.setUsers(user);
         Ads persistentAds = adsRepository.save(ads);
         Photo picture = createPicture(persistentAds, file, filePath);
         persistentAds.setImage(ENDPOINT_IMAGE + picture.getId());
@@ -74,20 +78,36 @@ public class AdsServiceImp implements AdsService {
     }
 
     @Override
-    public FullAds getAds(int id) {
-        Ads ads = adsRepository.getReferenceById(id);
+    public Ads getAds(int id) {
+        return adsRepository.findById(id).orElseThrow(
+                AdsNotFoundException::new
+        );
+    }
+    @Override
+    public FullAds getFullAds(int id) {
+        Ads ads = getAds(id);
         return mapper.adsToFullAds(ads);
     }
 
     @Override
+    @Transactional
     public void deleteAds(int id) {
-        Ads ads = adsRepository.getReferenceById(id);
+        Ads ads = getAds(id);
+        int photoId = getPhotoId(ads.getImage());
+        Photo photo = photoService.getPhoto(photoId);
+        photoService.deletePhoto(photo);
+        List<Comment> comments = commentService.getCommentByIdAds(id);
+        commentService.deleteComments(comments);
         adsRepository.delete(ads);
     }
 
+    private int getPhotoId(String endpoint) {
+        String number = endpoint.substring(endpoint.length() - 1);
+        return Integer.parseInt(number);
+    }
     @Override
     public AdsDTO updateAds(int id, CreateAds createAds) {
-        Ads ads = adsRepository.getReferenceById(id);
+        Ads ads = getAds(id);
         ads.setDescription(createAds.getDescription());
         ads.setPrice(createAds.getPrice());
         ads.setTitle(createAds.getTitle());
@@ -116,7 +136,7 @@ public class AdsServiceImp implements AdsService {
         fileManager.checkExistFileAndDelete(picture.getFilePath());
         picture.setFilePath(filePath.toString());
         photoService.createPhoto(picture);
-        Ads ads = adsRepository.getReferenceById(id);
+        Ads ads = getAds(id);
         return ads.getImage();
     }
 }

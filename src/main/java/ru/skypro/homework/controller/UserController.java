@@ -44,7 +44,7 @@ public class UserController {
 
     @PatchMapping(path = "/me/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> updateAvatarUser(@RequestPart(name = "image") MultipartFile image) {
-        if (fileManager.checkFile(image)) {
+        if (!fileManager.checkFile(image)) {
             return ResponseEntity.badRequest().build();
         }
         userService.createOrUpdateAvatar(image);
