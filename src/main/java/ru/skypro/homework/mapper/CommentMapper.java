@@ -3,7 +3,6 @@ package ru.skypro.homework.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import ru.skypro.homework.dto.CommentDTO;
-import ru.skypro.homework.dto.CommentReq;
 import ru.skypro.homework.entity.Comment;
 
 @Mapper(componentModel = "spring")
