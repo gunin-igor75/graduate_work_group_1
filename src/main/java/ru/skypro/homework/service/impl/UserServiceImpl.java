@@ -10,23 +10,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import ru.skypro.homework.dto.UserDTO;
 import ru.skypro.homework.entity.Avatar;
+import ru.skypro.homework.entity.Photo;
 import ru.skypro.homework.entity.Users;
-import ru.skypro.homework.exception_handling.FileCreateAndUpLoadException;
-import ru.skypro.homework.exception_handling.FileNotException;
 import ru.skypro.homework.exception_handling.UserNotFoundException;
 import ru.skypro.homework.mapper.UserMapper;
 import ru.skypro.homework.repository.UserRepository;
-import ru.skypro.homework.service.AvatarService;
+import ru.skypro.homework.service.PhotoService;
 import ru.skypro.homework.service.UserService;
+import ru.skypro.homework.util.FileManager;
 
 import javax.transaction.Transactional;
-import java.io.*;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Objects;
-
-import static java.nio.file.StandardOpenOption.CREATE_NEW;
 
 
 @Service("userServiceImp")
@@ -34,14 +28,16 @@ import static java.nio.file.StandardOpenOption.CREATE_NEW;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
-    private final AvatarService avatarService;
+    private final PhotoService photoService;
     private final UserMapper mapper;
     private final PasswordEncoder encoder;
+
+    private final FileManager fileManager;
 
     @Value("${users.avatar.dir.path}")
     private String DIRECTORY_AVATAR;
 
-    @Value("${users.image.endpoint}")
+    @Value("${image.endpoint}")
     private String ENDPOINT_IMAGE;
 
 
@@ -53,31 +49,6 @@ public class UserServiceImpl implements UserService {
                 }
         );
     }
-
-    @Override
-    public UserDTO getUser() {
-        Users authorizedUser = getAuthorizedUser();
-        return mapper.userToUserDTO(authorizedUser);
-    }
-
-    @Override
-    @Transactional
-    public void updateAvatarService(MultipartFile file) {
-        Users user = getAuthorizedUser();
-        Integer id = user.getId();
-        Path filePath = Path.of(DIRECTORY_AVATAR, id + "." +
-                getExtension(Objects.requireNonNull(file.getOriginalFilename())));
-        upLoadFile(file, filePath);
-        Avatar avatar = avatarService.getCurrentAvatarOrNew(id);
-        checkExistFileAndDelete(avatar);
-        avatar.setUsers(user);
-        avatar.setFilePath(filePath.toString());
-        avatar.setFileSize(file.getSize());
-        avatar.setMediaType(file.getContentType());
-        avatarService.avatarCreateOrUpdate(avatar);
-        checkUserAvatarExist(user);
-    }
-
 
     @Override
     public boolean updatePassword(String currentPassword, String newPassword) {
@@ -103,6 +74,32 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
+    public void createOrUpdateAvatar(MultipartFile file) {
+        Users user = getAuthorizedUser();
+        Integer id = user.getId();
+        Path filePath = fileManager.getRandomPath(file, DIRECTORY_AVATAR);
+        fileManager.upLoadFile(file, filePath);
+        Avatar avatar = (Avatar) photoService.getCurrentAvatarOrNew(id);
+        String currentFileName = avatar.getFilePath();
+        fileManager.checkExistFileAndDelete(currentFileName);
+        avatar.setUsers(user);
+        avatar.setFilePath(filePath.toString());
+        avatar.setFileSize(file.getSize());
+        avatar.setMediaType(file.getContentType());
+        Photo photo = photoService.createPhoto(avatar);
+        checkUserAvatarExist(user, photo.getId());
+    }
+
+
+    @Override
+    public UserDTO getUser() {
+        Users authorizedUser = getAuthorizedUser();
+        return mapper.userToUserDTO(authorizedUser);
+    }
+
+
+    @Override
     public Users getAuthorizedUser() {
         String userName = getAuthorizedUserName();
         return userRepository.findByEmail(userName).orElseThrow(
@@ -112,38 +109,9 @@ public class UserServiceImpl implements UserService {
         );
     }
 
-    private void checkExistFileAndDelete(Avatar avatar) {
-        String filePath = avatar.getFilePath();
-        if (filePath != null) {
-            Path path = Paths.get(filePath);
-            try {
-                Files.deleteIfExists(path);
-            } catch (IOException e) {
-                throw new FileNotException();
-            }
-        }
-    }
-
-    private void upLoadFile(MultipartFile file, Path filePath) {
-        try {
-            Files.createDirectories(filePath.getParent());
-            Files.deleteIfExists(filePath);
-            try (InputStream in = file.getInputStream();
-                 OutputStream out = Files.newOutputStream(filePath, CREATE_NEW);
-                 BufferedInputStream bis = new BufferedInputStream(in, 1024);
-                 BufferedOutputStream bos = new BufferedOutputStream(out, 1024)
-            ) {
-                bis.transferTo(bos);
-            }
-        } catch (IOException e) {
-            log.error("Error create or upload file");
-            throw new FileCreateAndUpLoadException();
-        }
-    }
-
-    private void checkUserAvatarExist(Users user) {
+    private void checkUserAvatarExist(Users user, Integer id) {
         if (user.getImage() == null) {
-            user.setImage(ENDPOINT_IMAGE + user.getId());
+            user.setImage(ENDPOINT_IMAGE + id);
             userRepository.save(user);
         }
     }
@@ -152,9 +120,5 @@ public class UserServiceImpl implements UserService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Users principal = (Users) authentication.getPrincipal();
         return principal.getUsername();
-    }
-
-    private String getExtension(String fileName) {
-        return fileName.substring(fileName.lastIndexOf(".") + 1);
     }
 }

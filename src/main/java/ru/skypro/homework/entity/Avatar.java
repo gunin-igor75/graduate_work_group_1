@@ -3,6 +3,7 @@ package ru.skypro.homework.entity;
 
 import lombok.*;
 import javax.persistence.*;
+import java.util.Objects;
 
 
 @Getter
@@ -10,24 +11,17 @@ import javax.persistence.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Entity(name = "avatar")
-public class Avatar {
-
-    @Id
-    private Integer id;
-
-    @Column
-    private String filePath;
-
-    @Column
-    private String mediaType;
-
-    @Column
-    private long fileSize;
+@Entity
+public class Avatar extends Photo{
 
     @OneToOne(fetch = FetchType.LAZY)
-    @MapsId
-    @JoinColumn(name = "id")
     private Users users;
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Avatar avatar = (Avatar) o;
+        return Objects.equals(super.getId(), avatar.getId());
+    }
 }
