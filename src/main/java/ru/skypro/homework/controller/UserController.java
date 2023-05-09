@@ -11,6 +11,8 @@ import ru.skypro.homework.dto.UserDTO;
 import ru.skypro.homework.service.UserService;
 import ru.skypro.homework.util.FileManager;
 
+import javax.validation.Valid;
+
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @RestController
@@ -23,7 +25,7 @@ public class UserController {
     private final FileManager fileManager;
 
     @PostMapping("/set_password")
-    public ResponseEntity<NewPassword> setPassword(@Validated @RequestBody NewPassword pairPassword) {
+    public ResponseEntity<NewPassword> setPassword(@Valid @RequestBody NewPassword pairPassword) {
         boolean isUpdatePassword = userService.updatePassword(pairPassword.getCurrentPassword(),
                 pairPassword.getNewPassword());
         if (isUpdatePassword) {
@@ -40,7 +42,7 @@ public class UserController {
     }
 
     @PatchMapping("/me")
-    public ResponseEntity<UserDTO> updateUser(@Validated @RequestBody UserDTO userDTO) {
+    public ResponseEntity<UserDTO> updateUser(@Valid @RequestBody UserDTO userDTO) {
         UserDTO newUserDTO = userService.updateUser(userDTO);
         return ResponseEntity.ok(newUserDTO);
     }

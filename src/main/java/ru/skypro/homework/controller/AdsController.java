@@ -11,6 +11,8 @@ import ru.skypro.homework.dto.*;
 import ru.skypro.homework.service.AdsService;
 import ru.skypro.homework.util.FileManager;
 
+import javax.validation.Valid;
+
 
 @Slf4j
 @RequiredArgsConstructor
@@ -30,7 +32,7 @@ public class AdsController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<AdsDTO> createAds(@RequestPart(name = "properties") @Validated CreateAds createAds,
+    public ResponseEntity<AdsDTO> createAds(@RequestPart(name = "properties") @Valid CreateAds createAds,
                                             @RequestPart(name = "image") MultipartFile file) {
         if (fileManager.checkFile(file)) {
             return ResponseEntity.badRequest().build();
@@ -53,7 +55,7 @@ public class AdsController {
 
     @PatchMapping("{id}")
     public ResponseEntity<AdsDTO> updateAds(@PathVariable int id,
-                                            @RequestBody @Validated CreateAds createAds) {
+                                            @RequestBody @Valid CreateAds createAds) {
         AdsDTO adsDTO = adsService.updateAds(id, createAds);
         return ResponseEntity.ok(adsDTO);
     }

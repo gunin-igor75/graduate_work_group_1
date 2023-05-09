@@ -14,6 +14,8 @@ import ru.skypro.homework.dto.RegisterReq;
 import ru.skypro.homework.dto.Role;
 import ru.skypro.homework.service.AuthService;
 
+import javax.validation.Valid;
+
 import static ru.skypro.homework.dto.Role.USER;
 
 @Slf4j
@@ -35,7 +37,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Validated @RequestBody RegisterReq req) {
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterReq req) {
         Role role = req.getRole() == null ? USER : req.getRole();
         req.setRole(role);
         if (authService.register(req)) {

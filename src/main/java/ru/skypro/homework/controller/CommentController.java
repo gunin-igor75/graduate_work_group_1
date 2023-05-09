@@ -8,6 +8,8 @@ import ru.skypro.homework.dto.CommentDTO;
 import ru.skypro.homework.dto.ResponseWrapperComment;
 import ru.skypro.homework.service.CommentService;
 
+import javax.validation.Valid;
+
 
 @RestController
 @RequestMapping("/ads")
@@ -40,7 +42,7 @@ public class CommentController {
     @PatchMapping("{adId}/comments/{commentId}")
     public ResponseEntity<CommentDTO> updateComment(@PathVariable("adId") int adsId,
                                                     @PathVariable("commentId") int commentId,
-                                                    @Validated @RequestBody CommentDTO commentDTO) {
+                                                    @Valid @RequestBody CommentDTO commentDTO) {
         CommentDTO commentNew = commentService.updateComment(adsId, commentId, commentDTO);
         return commentNew != null ? ResponseEntity.ok(commentNew) : ResponseEntity.notFound().build();
     }

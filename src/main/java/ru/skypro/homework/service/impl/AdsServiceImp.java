@@ -42,7 +42,6 @@ public class AdsServiceImp implements AdsService {
     private String ENDPOINT_IMAGE;
 
 
-
     @Override
     public ResponseWrapperAds getAllAds() {
         List<AdsDTO> ads = adsRepository.findAll().stream()
@@ -58,23 +57,15 @@ public class AdsServiceImp implements AdsService {
     @Transactional
     public AdsDTO createAds(CreateAds createAds, MultipartFile file) {
         Path filePath = fileManager.getRandomPath(file, DIRECTORY_PICTURE);
-        fileManager.upLoadFile(file, filePath);
         Ads ads = mapper.createAdsToAds(createAds);
         Users user = userService.getAuthorizedUser();
         ads.setUsers(user);
         Ads persistentAds = adsRepository.save(ads);
         Photo picture = createPicture(persistentAds, file, filePath);
         persistentAds.setImage(ENDPOINT_IMAGE + picture.getId());
-        return mapper.adsToAdsDTO(adsRepository.save(persistentAds));
-    }
-
-    private Photo createPicture(Ads ads, MultipartFile file, Path path) {
-        Picture picture = new Picture();
-        picture.setAds(ads);
-        picture.setFilePath(path.toString());
-        picture.setFileSize(file.getSize());
-        picture.setMediaType(file.getContentType());
-        return photoService.createPhoto(picture);
+        Ads nerwAds = adsRepository.save(persistentAds);
+        fileManager.upLoadFile(file, filePath);
+        return mapper.adsToAdsDTO(nerwAds);
     }
 
     @Override
@@ -83,6 +74,7 @@ public class AdsServiceImp implements AdsService {
                 AdsNotFoundException::new
         );
     }
+
     @Override
     public FullAds getFullAds(int id) {
         Ads ads = getAds(id);
@@ -101,16 +93,13 @@ public class AdsServiceImp implements AdsService {
         adsRepository.delete(ads);
     }
 
-    private int getPhotoId(String endpoint) {
-        String number = endpoint.substring(endpoint.length() - 1);
-        return Integer.parseInt(number);
-    }
     @Override
     public AdsDTO updateAds(int id, CreateAds createAds) {
         Ads ads = getAds(id);
         ads.setDescription(createAds.getDescription());
         ads.setPrice(createAds.getPrice());
         ads.setTitle(createAds.getTitle());
+        adsRepository.save(ads);
         return mapper.adsToAdsDTO(ads);
     }
 
@@ -131,12 +120,29 @@ public class AdsServiceImp implements AdsService {
     @Override
     public String updatePictureByAds(int id, MultipartFile file) {
         Path filePath = fileManager.getRandomPath(file, DIRECTORY_PICTURE);
-        fileManager.upLoadFile(file, filePath);
         Photo picture = photoService.getCurrentPicture(id);
         fileManager.checkExistFileAndDelete(picture.getFilePath());
         picture.setFilePath(filePath.toString());
+        picture.setFileSize(file.getSize());
+        picture.setMediaType(file.getContentType());
         photoService.createPhoto(picture);
+        fileManager.upLoadFile(file, filePath);
         Ads ads = getAds(id);
         return ads.getImage();
+    }
+
+    private Photo createPicture(Ads ads, MultipartFile file, Path path) {
+        Picture picture = new Picture();
+        picture.setAds(ads);
+        picture.setFilePath(path.toString());
+        picture.setFileSize(file.getSize());
+        picture.setMediaType(file.getContentType());
+        photoService.createPhoto(picture);
+        return photoService.createPhoto(picture);
+    }
+
+    private int getPhotoId(String endpoint) {
+        String number = endpoint.substring(endpoint.length() - 1);
+        return Integer.parseInt(number);
     }
 }

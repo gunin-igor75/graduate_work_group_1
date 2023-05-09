@@ -44,9 +44,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Users findUserById(Integer id) {
         return userRepository.findById(id).orElseThrow(
-                () -> {
-                    throw new UserNotFoundException();
-                }
+                UserNotFoundException::new
         );
     }
 
@@ -103,9 +101,7 @@ public class UserServiceImpl implements UserService {
     public Users getAuthorizedUser() {
         String userName = getAuthorizedUserName();
         return userRepository.findByEmail(userName).orElseThrow(
-                () -> {
-                    throw new UserNotFoundException();
-                }
+                UserNotFoundException::new
         );
     }
 
