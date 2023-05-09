@@ -23,11 +23,14 @@ public class UserController {
     private final FileManager fileManager;
 
     @PostMapping("/set_password")
-    public ResponseEntity<?> setPassword(@Validated @RequestBody NewPassword pairPassword) {
+    public ResponseEntity<NewPassword> setPassword(@Validated @RequestBody NewPassword pairPassword) {
         boolean isUpdatePassword = userService.updatePassword(pairPassword.getCurrentPassword(),
                 pairPassword.getNewPassword());
-        return isUpdatePassword ? ResponseEntity.ok().build()
-                : ResponseEntity.status(NOT_FOUND).build();
+        if (isUpdatePassword) {
+            NewPassword newPassword = getNewPassword(pairPassword);
+            return ResponseEntity.ok(newPassword);
+        }
+        return  ResponseEntity.status(NOT_FOUND).build();
     }
 
     @GetMapping("/me")
@@ -44,10 +47,17 @@ public class UserController {
 
     @PatchMapping(path = "/me/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> updateAvatarUser(@RequestPart(name = "image") MultipartFile image) {
-        if (!fileManager.checkFile(image)) {
+        if (fileManager.checkFile(image)) {
             return ResponseEntity.badRequest().build();
         }
         userService.createOrUpdateAvatar(image);
         return ResponseEntity.ok().build();
+    }
+
+    private NewPassword getNewPassword(NewPassword pairPassword) {
+        NewPassword newPassword = new NewPassword();
+        newPassword.setNewPassword(pairPassword.getNewPassword());
+        newPassword.setCurrentPassword(pairPassword.getNewPassword());
+        return newPassword;
     }
 }

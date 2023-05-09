@@ -32,7 +32,7 @@ public class AdsController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AdsDTO> createAds(@RequestPart(name = "properties") @Validated CreateAds createAds,
                                             @RequestPart(name = "image") MultipartFile file) {
-        if (!fileManager.checkFile(file)) {
+        if (fileManager.checkFile(file)) {
             return ResponseEntity.badRequest().build();
         }
         AdsDTO adsDTO = adsService.createAds(createAds, file);
@@ -66,8 +66,11 @@ public class AdsController {
 
     @PatchMapping(path = "{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> updatePictureAds(@PathVariable int id,
-                                                   @RequestPart(name = "image") MultipartFile image) {
-        String link = adsService.updatePictureByAds(id, image);
+                                                   @RequestPart(name = "image") MultipartFile file) {
+        if (fileManager.checkFile(file)) {
+            return ResponseEntity.badRequest().build();
+        }
+        String link = adsService.updatePictureByAds(id, file);
         return ResponseEntity.ok(link);
     }
 }

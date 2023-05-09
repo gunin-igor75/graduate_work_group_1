@@ -12,6 +12,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Objects;
 import java.util.UUID;
 
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
@@ -22,11 +23,9 @@ import static java.nio.file.StandardOpenOption.CREATE_NEW;
 public class FileManager {
     public boolean checkFile(MultipartFile file) {
         String filename = file.getOriginalFilename();
-        return file.getSize() != 0
-                && filename != null
-                && (filename.endsWith(".png")
-                || filename.endsWith(".swg")
-                || filename.endsWith(".jpg"));
+        return file.getSize() == 0
+                || filename == null
+                || !Objects.requireNonNull(file.getContentType()).contains("image");
     }
 
 
