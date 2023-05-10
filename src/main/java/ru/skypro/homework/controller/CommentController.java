@@ -2,6 +2,7 @@ package ru.skypro.homework.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.skypro.homework.dto.CommentDTO;
@@ -21,7 +22,7 @@ public class CommentController {
 
     @GetMapping("{id}/comments")
     public ResponseEntity<ResponseWrapperComment> getCommentByIdAds(@PathVariable("id") int id) {
-        ResponseWrapperComment comments = commentService.getResponseCommentByIdAds(id);
+        ResponseWrapperComment comments = commentService.getResponseCommentsByAdsId(id);
         return ResponseEntity.ok(comments);
     }
 
@@ -33,17 +34,19 @@ public class CommentController {
     }
 
     @DeleteMapping("{adId}/comments/{commentId}")
+    @PreAuthorize("customSecurityExpression.canAccessComment(#commentId)")
     public ResponseEntity<?> deleteComment(@PathVariable("adId") int adsId,
                                            @PathVariable("commentId") int commentId) {
-        boolean deleteComment = commentService.deleteComment(commentId);
-        return deleteComment ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
+        commentService.deleteComment(commentId);
+        return ResponseEntity.ok().build();
     }
 
     @PatchMapping("{adId}/comments/{commentId}")
+    @PreAuthorize("customSecurityExpression.canAccessComment(#commentId)")
     public ResponseEntity<CommentDTO> updateComment(@PathVariable("adId") int adsId,
                                                     @PathVariable("commentId") int commentId,
                                                     @Valid @RequestBody CommentDTO commentDTO) {
-        CommentDTO commentNew = commentService.updateComment(adsId, commentId, commentDTO);
+        CommentDTO commentNew = commentService.updateComment(commentId, commentDTO);
         return commentNew != null ? ResponseEntity.ok(commentNew) : ResponseEntity.notFound().build();
     }
 }

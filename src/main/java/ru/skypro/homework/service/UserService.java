@@ -11,6 +11,12 @@ public interface UserService {
 
     void createOrUpdateAvatar(MultipartFile image);
 
+    void createOrUpdateUsers(Users user);
+
+    Users getUsersByEmail(String email);
+
+    boolean isRegistrationrUser(String email);
+
     boolean updatePassword(String currentPassword, String newPassword);
 
     UserDTO updateUser(UserDTO userDTO);

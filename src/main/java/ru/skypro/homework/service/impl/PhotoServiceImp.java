@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.skypro.homework.entity.Avatar;
 import ru.skypro.homework.entity.Photo;
+import ru.skypro.homework.entity.Users;
 import ru.skypro.homework.exception_handling.PhotoNotFoundException;
 import ru.skypro.homework.repository.PhotoRepository;
 import ru.skypro.homework.service.PhotoService;
@@ -23,12 +24,13 @@ public class PhotoServiceImp implements PhotoService {
         );
     }
     @Override
-    public Photo getCurrentAvatarOrNew(int id) {
-        return photoRepository.findAvatarByUsersId(id).orElse(new Avatar());
+    public Photo getAvatarByUsersIdOrGetNew(Users user) {
+        Integer userId = user.getId();
+        return photoRepository.findAvatarByUsersId(userId).orElse(new Avatar(user));
     }
 
     @Override
-    public Photo createPhoto(Photo photo) {
+    public Photo createOrUpdatePhoto(Photo photo) {
         if (photo == null) {
             throw new PhotoNotFoundException();
         }
@@ -36,10 +38,10 @@ public class PhotoServiceImp implements PhotoService {
     }
 
     @Override
-    public Photo getCurrentPicture(Integer id) {
-        Optional<Photo> picture = photoRepository.findPictureByAdsId(id);
+    public Photo getPictureByAdsId(int adsId) {
+        Optional<Photo> picture = photoRepository.findPictureByAdsId(adsId);
         if (picture.isEmpty()) {
-            throw  new PhotoNotFoundException();
+            throw new PhotoNotFoundException();
         }
         return picture.get();
     }

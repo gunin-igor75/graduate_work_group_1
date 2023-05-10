@@ -22,6 +22,7 @@ import ru.skypro.homework.util.FileManager;
 import javax.transaction.Transactional;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -36,10 +37,10 @@ public class AdsServiceImp implements AdsService {
     private final AdsMapper mapper;
 
     @Value("${ads.picture.dir.path}")
-    private String DIRECTORY_PICTURE;
+    private String directoryPicture;
 
     @Value("${image.endpoint}")
-    private String ENDPOINT_IMAGE;
+    private String endpointImage;
 
 
     @Override
@@ -56,16 +57,16 @@ public class AdsServiceImp implements AdsService {
     @Override
     @Transactional
     public AdsDTO createAds(CreateAds createAds, MultipartFile file) {
-        Path filePath = fileManager.getRandomPath(file, DIRECTORY_PICTURE);
+        Path filePath = fileManager.getRandomPath(file, directoryPicture);
         Ads ads = mapper.createAdsToAds(createAds);
         Users user = userService.getAuthorizedUser();
         ads.setUsers(user);
         Ads persistentAds = adsRepository.save(ads);
         Photo picture = createPicture(persistentAds, file, filePath);
-        persistentAds.setImage(ENDPOINT_IMAGE + picture.getId());
-        Ads nerwAds = adsRepository.save(persistentAds);
+        persistentAds.setImage(endpointImage + picture.getId());
+        Ads newAds = adsRepository.save(persistentAds);
         fileManager.upLoadFile(file, filePath);
-        return mapper.adsToAdsDTO(nerwAds);
+        return mapper.adsToAdsDTO(newAds);
     }
 
     @Override
@@ -88,8 +89,7 @@ public class AdsServiceImp implements AdsService {
         int photoId = getPhotoId(ads.getImage());
         Photo photo = photoService.getPhoto(photoId);
         photoService.deletePhoto(photo);
-        List<Comment> comments = commentService.getCommentByIdAds(id);
-        commentService.deleteComments(comments);
+        commentService.deleteCommentsByAdsId(id);
         adsRepository.delete(ads);
     }
 
@@ -105,8 +105,8 @@ public class AdsServiceImp implements AdsService {
 
     @Override
     public ResponseWrapperAds getAdsMe() {
-        Users authorizedUser = userService.getAuthorizedUser();
-        Integer id = authorizedUser.getId();
+        Users user = userService.getAuthorizedUser();
+        Integer id = user.getId();
         List<AdsDTO> adsMe = adsRepository.findAdsByUserId(id)
                 .stream()
                 .map(mapper::adsToAdsDTO)
@@ -119,16 +119,22 @@ public class AdsServiceImp implements AdsService {
 
     @Override
     public String updatePictureByAds(int id, MultipartFile file) {
-        Path filePath = fileManager.getRandomPath(file, DIRECTORY_PICTURE);
-        Photo picture = photoService.getCurrentPicture(id);
+        Path filePath = fileManager.getRandomPath(file, directoryPicture);
+        Photo picture = photoService.getPictureByAdsId(id);
         fileManager.checkExistFileAndDelete(picture.getFilePath());
         picture.setFilePath(filePath.toString());
         picture.setFileSize(file.getSize());
         picture.setMediaType(file.getContentType());
-        photoService.createPhoto(picture);
+        photoService.createOrUpdatePhoto(picture);
         fileManager.upLoadFile(file, filePath);
         Ads ads = getAds(id);
         return ads.getImage();
+    }
+
+    @Override
+    public boolean isOwnerAds(int adsId, Integer usersId) {
+        Optional<Ads> adsOrNull = adsRepository.findAdsByIdAndUsersId(adsId, usersId);
+        return adsOrNull.isPresent();
     }
 
     private Photo createPicture(Ads ads, MultipartFile file, Path path) {
@@ -137,8 +143,7 @@ public class AdsServiceImp implements AdsService {
         picture.setFilePath(path.toString());
         picture.setFileSize(file.getSize());
         picture.setMediaType(file.getContentType());
-        photoService.createPhoto(picture);
-        return photoService.createPhoto(picture);
+        return photoService.createOrUpdatePhoto(picture);
     }
 
     private int getPhotoId(String endpoint) {

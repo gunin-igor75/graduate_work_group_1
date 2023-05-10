@@ -15,11 +15,9 @@ import ru.skypro.homework.repository.AdsRepository;
 import ru.skypro.homework.repository.CommentRepository;
 import ru.skypro.homework.service.CommentService;
 import ru.skypro.homework.service.UserService;
-
-import javax.persistence.EntityNotFoundException;
-import javax.transaction.Transactional;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -32,8 +30,8 @@ public class CommentServiceImp implements CommentService {
     private final CommentMapper mapper;
 
     @Override
-    public ResponseWrapperComment getResponseCommentByIdAds(int id) {
-        List<CommentDTO> comments = commentRepository.findByAds_Pk(id).stream()
+    public ResponseWrapperComment getResponseCommentsByAdsId(int id) {
+        List<CommentDTO> comments = getCommentsByAdsId(id).stream()
                 .map(mapper::commentToCommentDTO)
                 .collect(Collectors.toList());
         return ResponseWrapperComment.builder()
@@ -43,35 +41,27 @@ public class CommentServiceImp implements CommentService {
     }
 
 
-
     @Override
-    public Comment findComment(Integer pk) {
-        return commentRepository.findById(pk).orElseThrow(
-                    CommentNotFoundException::new
+    public Comment findComment(int id) {
+        return commentRepository.findById(id).orElseThrow(
+                CommentNotFoundException::new
         );
     }
 
     @Override
-    public boolean deleteComment(int commentId) {
-        Comment comment = findComment(commentId);
-        try {
-            commentRepository.delete(comment);
-        } catch (EntityNotFoundException e) {
-            log.warn("Comment does not exist {}", commentId);
-            return false;
-        }
-        return true;
+    public void deleteComment(int id) {
+        Comment comment = findComment(id);
+        commentRepository.delete(comment);
     }
 
     @Override
-    @Transactional
-    public void deleteComments(List<Comment> comments) {
-        comments.forEach(comment -> deleteComment(comment.getPk()));
+    public void deleteCommentsByAdsId(int adsId) {
+        commentRepository.deleteCommentByAds_Id(adsId);
     }
 
     @Override
-    public CommentDTO updateComment(int adId, int commentId, CommentDTO commentDTO) {
-        Comment comment = findComment(commentId);
+    public CommentDTO updateComment(int id, CommentDTO commentDTO) {
+        Comment comment = findComment(id);
         comment.setText(commentDTO.getText());
         comment.setCreatedAt(Instant.now());
         Comment newComment = commentRepository.save(comment);
@@ -89,13 +79,19 @@ public class CommentServiceImp implements CommentService {
         comment.setCreatedAt(Instant.now());
         comment.setText(commentDTO.getText());
         comment.setUsers(user);
-        Comment newComment = commentRepository.save(comment);
-        return mapper.commentToCommentDTO(newComment);
+        Comment persistentComment = commentRepository.save(comment);
+        return mapper.commentToCommentDTO(persistentComment);
     }
 
     @Override
-    public List<Comment> getCommentByIdAds(int id) {
-        return commentRepository.findByAds_Pk(id);
+    public List<Comment> getCommentsByAdsId(int id) {
+        return commentRepository.findByAds_Id(id);
+    }
+
+    @Override
+    public boolean isOwnerComment(int commentId, Integer userId) {
+        Optional<Comment> commentOrNull = commentRepository.findCommentByIdAndUsersId(commentId, userId);
+        return commentOrNull.isPresent();
     }
 }
 

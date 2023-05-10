@@ -48,11 +48,11 @@ public class UserController {
     }
 
     @PatchMapping(path = "/me/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> updateAvatarUser(@RequestPart(name = "image") MultipartFile image) {
-        if (fileManager.checkFile(image)) {
+    public ResponseEntity<?> updateAvatarUser(@RequestPart(name = "image") MultipartFile file) {
+        if (fileManager.checkFile(file)) {
             return ResponseEntity.badRequest().build();
         }
-        userService.createOrUpdateAvatar(image);
+        userService.createOrUpdateAvatar(file);
         return ResponseEntity.ok().build();
     }
 
