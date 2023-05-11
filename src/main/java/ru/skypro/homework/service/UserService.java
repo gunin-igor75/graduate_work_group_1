@@ -9,7 +9,7 @@ public interface UserService {
 
     UserDTO getUser();
 
-    void createOrUpdateAvatar(MultipartFile image);
+    UserDTO createOrUpdateAvatar(MultipartFile image);
 
     void createOrUpdateUsers(Users user);
 

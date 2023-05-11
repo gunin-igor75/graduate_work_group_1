@@ -8,7 +8,7 @@ import ru.skypro.homework.service.AdsService;
 import ru.skypro.homework.service.CommentService;
 import ru.skypro.homework.service.UserService;
 
-@Service
+@Service("customSecurityExpression")
 @RequiredArgsConstructor
 public class CustomSecurityExpression {
 

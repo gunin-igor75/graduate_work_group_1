@@ -34,7 +34,7 @@ public class CommentController {
     }
 
     @DeleteMapping("{adId}/comments/{commentId}")
-    @PreAuthorize("customSecurityExpression.canAccessComment(#commentId)")
+    @PreAuthorize("@customSecurityExpression.canAccessComment(#commentId)")
     public ResponseEntity<?> deleteComment(@PathVariable("adId") int adsId,
                                            @PathVariable("commentId") int commentId) {
         commentService.deleteComment(commentId);
@@ -42,10 +42,10 @@ public class CommentController {
     }
 
     @PatchMapping("{adId}/comments/{commentId}")
-    @PreAuthorize("customSecurityExpression.canAccessComment(#commentId)")
+    @PreAuthorize("@customSecurityExpression.canAccessComment(#commentId)")
     public ResponseEntity<CommentDTO> updateComment(@PathVariable("adId") int adsId,
                                                     @PathVariable("commentId") int commentId,
-                                                    @Valid @RequestBody CommentDTO commentDTO) {
+                                                    @RequestBody CommentDTO commentDTO) {
         CommentDTO commentNew = commentService.updateComment(commentId, commentDTO);
         return commentNew != null ? ResponseEntity.ok(commentNew) : ResponseEntity.notFound().build();
     }

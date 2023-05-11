@@ -20,7 +20,7 @@ public class CommentDTO {
     private Integer pk;
 
     @NotNull(message = "Text must be not null")
-    @Length(min = 8, max = 255, message = "Text Max 255 Symbol")
+    @Length(min = 2, max = 255, message = "Text Max 255 Symbol")
     private String text;
 
 }

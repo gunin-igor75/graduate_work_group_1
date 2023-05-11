@@ -100,8 +100,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void createOrUpdateAvatar(MultipartFile file) {
-        Users user = getAuthorizedUser();
+    public UserDTO createOrUpdateAvatar(MultipartFile file) {
+        Users authorizedUser = getAuthorizedUser();
+        Users user = userRepository.findById(authorizedUser.getId()).orElseThrow();
         Path filePath = fileManager.getRandomPath(file, directoryAvatar);
         Photo avatar =  photoService.getAvatarByUsersIdOrGetNew(user);
         String currentFileName = avatar.getFilePath();
@@ -110,8 +111,9 @@ public class UserServiceImpl implements UserService {
         avatar.setFileSize(file.getSize());
         avatar.setMediaType(file.getContentType());
         Photo photo = photoService.createOrUpdatePhoto(avatar);
-        checkUserAvatarExist(user, photo.getId());
+        Users newUser = checkUserAvatarExist(user, photo.getId());
         fileManager.upLoadFile(file, filePath);
+        return mapper.userToUserDTO(newUser);
     }
 
 
@@ -130,11 +132,12 @@ public class UserServiceImpl implements UserService {
         );
     }
 
-    private void checkUserAvatarExist(Users user, Integer id) {
+    private Users checkUserAvatarExist(Users user, Integer id) {
         if (user.getImage() == null) {
             user.setImage(endpointImage + id);
-            userRepository.save(user);
+            return userRepository.save(user);
         }
+        return user;
     }
 
     private String getAuthorizedUserName() {

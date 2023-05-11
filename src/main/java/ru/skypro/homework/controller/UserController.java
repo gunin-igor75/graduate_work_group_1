@@ -48,12 +48,12 @@ public class UserController {
     }
 
     @PatchMapping(path = "/me/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> updateAvatarUser(@RequestPart(name = "image") MultipartFile file) {
+    public ResponseEntity<UserDTO> updateAvatarUser(@RequestPart(name = "image") MultipartFile file) {
         if (fileManager.checkFile(file)) {
             return ResponseEntity.badRequest().build();
         }
-        userService.createOrUpdateAvatar(file);
-        return ResponseEntity.ok().build();
+        UserDTO userDTO = userService.createOrUpdateAvatar(file);
+        return ResponseEntity.ok(userDTO);
     }
 
     private NewPassword getNewPassword(NewPassword pairPassword) {
