@@ -1,56 +1,46 @@
 package ru.skypro.homework.service.impl;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.skypro.homework.dto.RegisterReq;
 import ru.skypro.homework.entity.Users;
 import ru.skypro.homework.mapper.UserMapper;
-import ru.skypro.homework.repository.UserRepository;
 import ru.skypro.homework.service.AuthService;
-
-import java.util.Optional;
+import ru.skypro.homework.service.UserService;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
     private final PasswordEncoder encoder;
-    private final UserRepository userRepository;
+
+    private final UserService userService;
 
     private final UserMapper mapper;
 
-    public AuthServiceImpl(PasswordEncoder passwordEncoder, UserRepository userRepository, UserMapper mapper) {
-        this.encoder = passwordEncoder;
-        this.userRepository = userRepository;
-        this.mapper = mapper;
-    }
 
     @Override
     public boolean login(String userName, String password) {
-        Optional<Users> optionalUser = userRepository.findByEmail(userName);
-        if (optionalUser.isEmpty()) {
+        boolean isRegistration = userService.isRegistrationrUser(userName);
+        if (!isRegistration) {
             return false;
         }
-        Users users = optionalUser.get();
-        try {
-            return encoder.matches(password, users.getPassword());
-        } catch (UsernameNotFoundException e) {
-            log.warn("Wrong username or password");
-        }
-        return false;
+        Users user = userService.getUsersByEmail(userName);
+        return encoder.matches(password, user.getPassword());
     }
 
     @Override
     public boolean register(RegisterReq registerReq) {
-        Optional<Users> optionalUser = userRepository.findByEmail(registerReq.getUsername());
-        if (optionalUser.isPresent()) {
+        boolean isRegistration = userService.isRegistrationrUser(registerReq.getUsername());
+        if (isRegistration) {
             return false;
         }
-        Users users = mapper.registerReqToUsers(registerReq);
-        users.setPassword(encoder.encode(registerReq.getPassword()));
-        userRepository.save(users);
+        Users user = mapper.registerReqToUsers(registerReq);
+        user.setPassword(encoder.encode(registerReq.getPassword()));
+        userService.createOrUpdateUsers(user);
         return true;
     }
 }

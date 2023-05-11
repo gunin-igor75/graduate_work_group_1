@@ -21,42 +21,67 @@ import ru.skypro.homework.util.FileManager;
 
 import javax.transaction.Transactional;
 import java.nio.file.Path;
+import java.util.Optional;
 
 
 @Service("userServiceImp")
 @Slf4j
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
+
     private final UserRepository userRepository;
+
     private final PhotoService photoService;
+
     private final UserMapper mapper;
+
     private final PasswordEncoder encoder;
 
     private final FileManager fileManager;
 
     @Value("${users.avatar.dir.path}")
-    private String DIRECTORY_AVATAR;
+    private String directoryAvatar;
 
     @Value("${image.endpoint}")
-    private String ENDPOINT_IMAGE;
+    private String endpointImage;
 
 
     @Override
     public Users findUserById(Integer id) {
         return userRepository.findById(id).orElseThrow(
-                () -> {
-                    throw new UserNotFoundException();
-                }
+                UserNotFoundException::new
         );
     }
 
     @Override
+    public void createOrUpdateUsers(Users user) {
+        if (user == null) {
+            throw  new UserNotFoundException();
+        }
+        userRepository.save(user);
+    }
+
+    @Override
+    public Users getUsersByEmail(String email) {
+        Optional<Users> usersOrNull = userRepository.findByEmail(email);
+        if (usersOrNull.isEmpty()) {
+            throw new UserNotFoundException();
+        }
+        return usersOrNull.get();
+    }
+
+    @Override
+    public boolean isRegistrationrUser(String email) {
+        return userRepository.findByEmail(email).isPresent();
+    }
+
+    @Override
     public boolean updatePassword(String currentPassword, String newPassword) {
-        Users authorizedUser = getAuthorizedUser();
-        boolean isPasswordGood = encoder.matches(currentPassword, authorizedUser.getPassword());
+        Users user = getAuthorizedUser();
+        boolean isPasswordGood = encoder.matches(currentPassword, user.getPassword());
         if (isPasswordGood) {
-            authorizedUser.setPassword(encoder.encode(newPassword));
-            userRepository.save(authorizedUser);
+            user.setPassword(encoder.encode(newPassword));
+            userRepository.save(user);
             return true;
         }
         return false;
@@ -75,20 +100,20 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void createOrUpdateAvatar(MultipartFile file) {
-        Users user = getAuthorizedUser();
-        Integer id = user.getId();
-        Path filePath = fileManager.getRandomPath(file, DIRECTORY_AVATAR);
-        fileManager.upLoadFile(file, filePath);
-        Avatar avatar = (Avatar) photoService.getCurrentAvatarOrNew(id);
+    public UserDTO createOrUpdateAvatar(MultipartFile file) {
+        Users authorizedUser = getAuthorizedUser();
+        Users user = userRepository.findById(authorizedUser.getId()).orElseThrow();
+        Path filePath = fileManager.getRandomPath(file, directoryAvatar);
+        Photo avatar =  photoService.getAvatarByUsersIdOrGetNew(user);
         String currentFileName = avatar.getFilePath();
         fileManager.checkExistFileAndDelete(currentFileName);
-        avatar.setUsers(user);
         avatar.setFilePath(filePath.toString());
         avatar.setFileSize(file.getSize());
         avatar.setMediaType(file.getContentType());
-        Photo photo = photoService.createPhoto(avatar);
-        checkUserAvatarExist(user, photo.getId());
+        Photo photo = photoService.createOrUpdatePhoto(avatar);
+        Users newUser = checkUserAvatarExist(user, photo.getId());
+        fileManager.upLoadFile(file, filePath);
+        return mapper.userToUserDTO(newUser);
     }
 
 
@@ -103,17 +128,16 @@ public class UserServiceImpl implements UserService {
     public Users getAuthorizedUser() {
         String userName = getAuthorizedUserName();
         return userRepository.findByEmail(userName).orElseThrow(
-                () -> {
-                    throw new UserNotFoundException();
-                }
+                UserNotFoundException::new
         );
     }
 
-    private void checkUserAvatarExist(Users user, Integer id) {
+    private Users checkUserAvatarExist(Users user, Integer id) {
         if (user.getImage() == null) {
-            user.setImage(ENDPOINT_IMAGE + id);
-            userRepository.save(user);
+            user.setImage(endpointImage + id);
+            return userRepository.save(user);
         }
+        return user;
     }
 
     private String getAuthorizedUserName() {

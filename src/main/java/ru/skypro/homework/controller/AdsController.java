@@ -4,12 +4,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ru.skypro.homework.dto.*;
 import ru.skypro.homework.service.AdsService;
 import ru.skypro.homework.util.FileManager;
+
+import javax.validation.Valid;
 
 
 @Slf4j
@@ -30,7 +33,7 @@ public class AdsController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<AdsDTO> createAds(@RequestPart(name = "properties") @Validated CreateAds createAds,
+    public ResponseEntity<AdsDTO> createAds(@RequestPart(name = "properties") @Valid CreateAds createAds,
                                             @RequestPart(name = "image") MultipartFile file) {
         if (fileManager.checkFile(file)) {
             return ResponseEntity.badRequest().build();
@@ -46,14 +49,16 @@ public class AdsController {
     }
 
     @DeleteMapping("{id}")
+    @PreAuthorize("@customSecurityExpression.canAccessAds(#id)")
     public ResponseEntity<?> deleteAds(@PathVariable int id) {
         adsService.deleteAds(id);
         return ResponseEntity.ok().build();
     }
 
     @PatchMapping("{id}")
+    @PreAuthorize("@customSecurityExpression.canAccessAds(#id)")
     public ResponseEntity<AdsDTO> updateAds(@PathVariable int id,
-                                            @RequestBody @Validated CreateAds createAds) {
+                                            @RequestBody @Valid CreateAds createAds) {
         AdsDTO adsDTO = adsService.updateAds(id, createAds);
         return ResponseEntity.ok(adsDTO);
     }
@@ -65,6 +70,7 @@ public class AdsController {
     }
 
     @PatchMapping(path = "{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("@customSecurityExpression.canAccessAds(#id)")
     public ResponseEntity<String> updatePictureAds(@PathVariable int id,
                                                    @RequestPart(name = "image") MultipartFile file) {
         if (fileManager.checkFile(file)) {

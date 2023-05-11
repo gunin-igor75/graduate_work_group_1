@@ -11,6 +11,7 @@ public interface CommentMapper {
     @Mapping(target = "authorFirstName" , source = "users.firstName")
     @Mapping(target = "authorImage" , source = "users.image")
     @Mapping(target = "createdAt" , expression = "java(comment.getCreatedAt().toEpochMilli())")
+    @Mapping(target = "pk" , source = "id")
     CommentDTO commentToCommentDTO(Comment comment);
 
 }

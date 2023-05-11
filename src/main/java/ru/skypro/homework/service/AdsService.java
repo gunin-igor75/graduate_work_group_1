@@ -23,4 +23,6 @@ public interface AdsService {
     ResponseWrapperAds getAdsMe();
 
     String updatePictureByAds(int id, MultipartFile file);
+
+    boolean isOwnerAds(int adsId, Integer usersId);
 }
