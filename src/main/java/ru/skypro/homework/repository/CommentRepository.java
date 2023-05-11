@@ -3,12 +3,10 @@ package ru.skypro.homework.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import ru.skypro.homework.entity.Comment;
 
-import java.util.Collection;
+import java.util.List;
 
 public interface CommentRepository extends JpaRepository<Comment, Integer> {
 
-    Collection<Comment> findByAds_Pk(Integer pk);
+    List<Comment> findByAds_Pk(Integer pk);
 
-
-    void deleteCommentByAds_PkAndPk(Integer adId, Integer commentId);
 }

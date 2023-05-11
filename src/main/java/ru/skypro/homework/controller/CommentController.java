@@ -2,9 +2,9 @@ package ru.skypro.homework.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.skypro.homework.dto.CommentDTO;
-import ru.skypro.homework.dto.CommentReq;
 import ru.skypro.homework.dto.ResponseWrapperComment;
 import ru.skypro.homework.service.CommentService;
 
@@ -13,34 +13,35 @@ import ru.skypro.homework.service.CommentService;
 @RequestMapping("/ads")
 @RequiredArgsConstructor
 @CrossOrigin(value = "http://localhost:3000")
+@Validated
 public class CommentController {
     private final CommentService commentService;
 
     @GetMapping("{id}/comments")
-    public ResponseEntity<ResponseWrapperComment> getCommentByIdAds(@PathVariable("id") Integer id) {
-        ResponseWrapperComment comments = commentService.getCommentByIdAds(id);
+    public ResponseEntity<ResponseWrapperComment> getCommentByIdAds(@PathVariable("id") int id) {
+        ResponseWrapperComment comments = commentService.getResponseCommentByIdAds(id);
         return ResponseEntity.ok(comments);
     }
 
     @PostMapping("{id}/comments")
-    public ResponseEntity<CommentDTO> createComment(@PathVariable("id") Integer id,
-                                                    @RequestBody CommentReq commentReq) {
-        CommentDTO commentDTO = commentService.createComment(id, commentReq);
-        return commentDTO != null ? ResponseEntity.ok(commentDTO) : ResponseEntity.notFound().build();
+    public ResponseEntity<CommentDTO> createComment(@PathVariable("id") int id,
+                                                    @Validated @RequestBody CommentDTO commentDTO) {
+        CommentDTO commentNew = commentService.createComment(id, commentDTO);
+        return commentNew != null ? ResponseEntity.ok(commentNew) : ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("{adId}/comments/{commentId}")
-    public ResponseEntity<?> deleteComment(@PathVariable("adId") Integer adId,
-                                           @PathVariable("commentId") Integer commentId) {
-        boolean deleteComment = commentService.deleteComment(adId, commentId);
+    public ResponseEntity<?> deleteComment(@PathVariable("adId") int adsId,
+                                           @PathVariable("commentId") int commentId) {
+        boolean deleteComment = commentService.deleteComment(commentId);
         return deleteComment ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
     }
 
     @PatchMapping("{adId}/comments/{commentId}")
-    public ResponseEntity<CommentDTO> updateComment(@PathVariable("adId") Integer adId,
-                                                    @PathVariable("commentId") Integer commentId,
-                                                    @RequestBody CommentReq commentReq) {
-        CommentDTO commentDTO = commentService.updateComment(adId, commentId, commentReq);
-        return ResponseEntity.ok(commentDTO);
+    public ResponseEntity<CommentDTO> updateComment(@PathVariable("adId") int adsId,
+                                                    @PathVariable("commentId") int commentId,
+                                                    @Validated @RequestBody CommentDTO commentDTO) {
+        CommentDTO commentNew = commentService.updateComment(adsId, commentId, commentDTO);
+        return commentNew != null ? ResponseEntity.ok(commentNew) : ResponseEntity.notFound().build();
     }
 }

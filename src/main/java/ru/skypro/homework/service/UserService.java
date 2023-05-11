@@ -9,7 +9,7 @@ public interface UserService {
 
     UserDTO getUser();
 
-    void updateAvatarService(MultipartFile image);
+    void createOrUpdateAvatar(MultipartFile image);
 
     boolean updatePassword(String currentPassword, String newPassword);
 

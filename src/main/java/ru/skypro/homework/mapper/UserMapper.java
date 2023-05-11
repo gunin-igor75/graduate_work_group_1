@@ -10,6 +10,7 @@ import ru.skypro.homework.entity.Users;
 @Mapper(componentModel = "spring")
 public interface UserMapper {
    UserDTO userToUserDTO(Users users);
+
    Users userDTOToUsers(UserDTO userDTO);
    @Mapping(target = "email", source = "username")
    Users registerReqToUsers(RegisterReq registerReq);
