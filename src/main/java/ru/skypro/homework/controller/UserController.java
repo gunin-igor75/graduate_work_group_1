@@ -1,6 +1,7 @@
 package ru.skypro.homework.controller;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -15,6 +16,7 @@ import javax.validation.Valid;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
+@Slf4j
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
@@ -53,6 +55,7 @@ public class UserController {
             return ResponseEntity.badRequest().build();
         }
         UserDTO userDTO = userService.createOrUpdateAvatar(file);
+        log.info(userDTO.toString());
         return ResponseEntity.ok(userDTO);
     }
 

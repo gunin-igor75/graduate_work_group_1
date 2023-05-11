@@ -11,7 +11,6 @@ import ru.skypro.homework.service.CommentService;
 
 import javax.validation.Valid;
 
-
 @RestController
 @RequestMapping("/ads")
 @RequiredArgsConstructor
@@ -28,7 +27,7 @@ public class CommentController {
 
     @PostMapping("{id}/comments")
     public ResponseEntity<CommentDTO> createComment(@PathVariable("id") int id,
-                                                    @Validated @RequestBody CommentDTO commentDTO) {
+                                                    @Valid @RequestBody CommentDTO commentDTO) {
         CommentDTO commentNew = commentService.createComment(id, commentDTO);
         return commentNew != null ? ResponseEntity.ok(commentNew) : ResponseEntity.notFound().build();
     }
@@ -45,7 +44,7 @@ public class CommentController {
     @PreAuthorize("@customSecurityExpression.canAccessComment(#commentId)")
     public ResponseEntity<CommentDTO> updateComment(@PathVariable("adId") int adsId,
                                                     @PathVariable("commentId") int commentId,
-                                                    @RequestBody CommentDTO commentDTO) {
+                                                    @Valid @RequestBody CommentDTO commentDTO) {
         CommentDTO commentNew = commentService.updateComment(commentId, commentDTO);
         return commentNew != null ? ResponseEntity.ok(commentNew) : ResponseEntity.notFound().build();
     }
