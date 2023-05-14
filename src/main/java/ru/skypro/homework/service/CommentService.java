@@ -4,23 +4,22 @@ import ru.skypro.homework.dto.CommentDTO;
 import ru.skypro.homework.dto.ResponseWrapperComment;
 import ru.skypro.homework.entity.Comment;
 
-import javax.transaction.Transactional;
 import java.util.List;
 
 public interface CommentService {
-    ResponseWrapperComment getResponseCommentByIdAds(int id);
+    ResponseWrapperComment getResponseCommentsByAdsId(int id);
 
-    Comment findComment(Integer pk);
+    Comment findComment(int id);
 
-    boolean deleteComment(int commentId);
+    void deleteComment(int id);
 
-    @Transactional
-    void deleteComments(List<Comment> comments);
+    void deleteCommentsByAdsId(int adsId);
 
-    CommentDTO updateComment(int adId, int commentId, CommentDTO commentDTO);
+    CommentDTO updateComment(int id, CommentDTO commentDTO);
 
     CommentDTO createComment(int id, CommentDTO commentDTO);
 
-    List<Comment> getCommentByIdAds(int id);
+    List<Comment> getCommentsByAdsId(int id);
 
+    boolean isOwnerComment(int commentId, Integer userId);
 }

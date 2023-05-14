@@ -9,7 +9,13 @@ public interface UserService {
 
     UserDTO getUser();
 
-    void createOrUpdateAvatar(MultipartFile image);
+    UserDTO createOrUpdateAvatar(MultipartFile image);
+
+    void createOrUpdateUsers(Users user);
+
+    Users getUsersByEmail(String email);
+
+    boolean isRegistrationrUser(String email);
 
     boolean updatePassword(String currentPassword, String newPassword);
 

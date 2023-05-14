@@ -1,6 +1,5 @@
 package ru.skypro.homework.util;
 
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -14,8 +13,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.UUID;
-
-import static java.nio.file.StandardOpenOption.CREATE_NEW;
 
 @RequiredArgsConstructor
 @Component
@@ -44,13 +41,7 @@ public class FileManager {
         try {
             Files.createDirectories(filePath.getParent());
             Files.deleteIfExists(filePath);
-            try (InputStream in = file.getInputStream();
-                 OutputStream out = Files.newOutputStream(filePath, CREATE_NEW);
-                 BufferedInputStream bis = new BufferedInputStream(in, 1024);
-                 BufferedOutputStream bos = new BufferedOutputStream(out, 1024)
-            ) {
-                bis.transferTo(bos);
-            }
+            Files.write(filePath, file.getBytes());
         } catch (IOException e) {
             log.error("Error create or upload file");
             throw new FileCreateAndUpLoadException();

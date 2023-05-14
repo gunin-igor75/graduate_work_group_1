@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import ru.skypro.homework.entity.Ads;
 
 import java.util.List;
+import java.util.Optional;
 
 
 public interface AdsRepository extends JpaRepository<Ads, Integer> {
@@ -12,4 +13,5 @@ public interface AdsRepository extends JpaRepository<Ads, Integer> {
     List<Ads> findAdsByUserId(Integer id);
 
     List<Ads> findByTitleLike(String title);
+    Optional<Ads> findAdsByIdAndUsersId(int adsId, Integer usersId);
 }
