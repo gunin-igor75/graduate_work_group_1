@@ -9,10 +9,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import ru.skypro.homework.dto.UserDTO;
-import ru.skypro.homework.entity.Avatar;
 import ru.skypro.homework.entity.Photo;
 import ru.skypro.homework.entity.Users;
-import ru.skypro.homework.exception_handling.UserNotFoundException;
+import ru.skypro.homework.exception_handling.ResourceException;
 import ru.skypro.homework.mapper.UserMapper;
 import ru.skypro.homework.repository.UserRepository;
 import ru.skypro.homework.service.PhotoService;
@@ -24,7 +23,7 @@ import java.nio.file.Path;
 import java.util.Optional;
 
 
-@Service("userServiceImp")
+@Service
 @Slf4j
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -47,37 +46,13 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public Users findUserById(Integer id) {
-        return userRepository.findById(id).orElseThrow(
-                UserNotFoundException::new
-        );
-    }
-
-    @Override
-    public void createOrUpdateUsers(Users user) {
-        if (user == null) {
-            throw  new UserNotFoundException();
-        }
+    public void createUsers(Users user) {
         userRepository.save(user);
     }
 
     @Override
-    public Users getUsersByEmail(String email) {
-        Optional<Users> usersOrNull = userRepository.findByEmail(email);
-        if (usersOrNull.isEmpty()) {
-            throw new UserNotFoundException();
-        }
-        return usersOrNull.get();
-    }
-
-    @Override
-    public boolean isRegistrationrUser(String email) {
-        return userRepository.findByEmail(email).isPresent();
-    }
-
-    @Override
     public boolean updatePassword(String currentPassword, String newPassword) {
-        Users user = getAuthorizedUser();
+        Users user = getUser();
         boolean isPasswordGood = encoder.matches(currentPassword, user.getPassword());
         if (isPasswordGood) {
             user.setPassword(encoder.encode(newPassword));
@@ -90,21 +65,20 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDTO updateUser(UserDTO userDTO) {
         Integer id = userDTO.getId();
-        Users persistentUser = findUserById(id);
-        Users users = mapper.userDTOToUsers(userDTO);
-        users.setPassword(persistentUser.getPassword());
-        users.setRole(persistentUser.getRole());
-        Users saveUser = userRepository.save(users);
+        Users user = getUserById(id);
+        user.setFirstName(userDTO.getFirstName());
+        user.setLastName(userDTO.getLastName());
+        user.setPhone(userDTO.getPhone());
+        Users saveUser = userRepository.save(user);
         return mapper.userToUserDTO(saveUser);
     }
 
     @Override
     @Transactional
     public UserDTO createOrUpdateAvatar(MultipartFile file) {
-        Users authorizedUser = getAuthorizedUser();
-        Users user = userRepository.findById(authorizedUser.getId()).orElseThrow();
+        Users user = getUser();
         Path filePath = fileManager.getRandomPath(file, directoryAvatar);
-        Photo avatar =  photoService.getAvatarByUsersIdOrGetNew(user);
+        Photo avatar = photoService.getAvatarByUsersIdOrGetNew(user);
         String currentFileName = avatar.getFilePath();
         fileManager.checkExistFileAndDelete(currentFileName);
         avatar.setFilePath(filePath.toString());
@@ -116,19 +90,50 @@ public class UserServiceImpl implements UserService {
         return mapper.userToUserDTO(newUser);
     }
 
-
     @Override
-    public UserDTO getUser() {
-        Users authorizedUser = getAuthorizedUser();
+    public UserDTO getUserDTO() {
+        Users authorizedUser = getUser();
         return mapper.userToUserDTO(authorizedUser);
     }
 
+    @Override
+    public Optional<Users> getRegistrationUser(String email) {
+        return userRepository.findByEmail(email);
+    }
 
     @Override
-    public Users getAuthorizedUser() {
-        String userName = getAuthorizedUserName();
-        return userRepository.findByEmail(userName).orElseThrow(
-                UserNotFoundException::new
+    public Users getUser() {
+        String userName = getUserName();
+        return getUsersByEmail(userName);
+    }
+
+    private String getUserName() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication instanceof Users) {
+            Users principal = (Users) authentication.getPrincipal();
+            return principal.getUsername();
+        }
+        String message = "There is no user in authentication";
+        log.error(message);
+        throw new ResourceException(message);
+    }
+
+    private Users getUsersByEmail(String email) {
+        Optional<Users> usersOrNull = getRegistrationUser(email);
+        if (usersOrNull.isEmpty()) {
+            String message = "The authenticated user is not in the database";
+            log.error(message);
+            throw new ResourceException(message);
+        }
+        return usersOrNull.get();
+    }
+
+    private Users getUserById(Integer id) {
+        return userRepository.findById(id).orElseThrow(() -> {
+                    String message = "The authenticated user is not in the database";
+                    log.error(message);
+                    return new ResourceException(message);
+                }
         );
     }
 
@@ -138,11 +143,5 @@ public class UserServiceImpl implements UserService {
             return userRepository.save(user);
         }
         return user;
-    }
-
-    private String getAuthorizedUserName() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Users principal = (Users) authentication.getPrincipal();
-        return principal.getUsername();
     }
 }

@@ -15,14 +15,18 @@ import java.util.Objects;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Photo {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(name = "file_path", nullable = false)
     private String filePath;
 
+    @Column(name = "media_type", nullable = false)
     private String mediaType;
 
+    @Column(name = "file_size", nullable = false)
     private long fileSize;
 
     @Override

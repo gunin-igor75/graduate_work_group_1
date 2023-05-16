@@ -5,7 +5,6 @@ import ru.skypro.homework.dto.AdsDTO;
 import ru.skypro.homework.dto.CreateAds;
 import ru.skypro.homework.dto.FullAds;
 import ru.skypro.homework.dto.ResponseWrapperAds;
-import ru.skypro.homework.entity.Ads;
 
 public interface AdsService {
     ResponseWrapperAds getAllAds();

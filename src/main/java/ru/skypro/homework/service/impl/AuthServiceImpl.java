@@ -10,6 +10,8 @@ import ru.skypro.homework.mapper.UserMapper;
 import ru.skypro.homework.service.AuthService;
 import ru.skypro.homework.service.UserService;
 
+import java.util.Optional;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -24,23 +26,23 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public boolean login(String userName, String password) {
-        boolean isRegistration = userService.isRegistrationrUser(userName);
-        if (!isRegistration) {
+        Optional<Users> usersOrNull = userService.getRegistrationUser(userName);
+        if (usersOrNull.isEmpty()) {
             return false;
         }
-        Users user = userService.getUsersByEmail(userName);
+        Users user = usersOrNull.get();
         return encoder.matches(password, user.getPassword());
     }
 
     @Override
     public boolean register(RegisterReq registerReq) {
-        boolean isRegistration = userService.isRegistrationrUser(registerReq.getUsername());
-        if (isRegistration) {
+        Optional<Users> usersOrNull = userService.getRegistrationUser(registerReq.getUsername());
+        if (usersOrNull.isPresent()) {
             return false;
         }
         Users user = mapper.registerReqToUsers(registerReq);
         user.setPassword(encoder.encode(registerReq.getPassword()));
-        userService.createOrUpdateUsers(user);
+        userService.createUsers(user);
         return true;
     }
 }

@@ -33,7 +33,6 @@ public class AdsServiceImp implements AdsService {
     private final FileManager fileManager;
     private final PhotoService photoService;
     private final UserService userService;
-    private final CommentService commentService;
     private final AdsMapper mapper;
 
     @Value("${ads.picture.dir.path}")
@@ -59,7 +58,7 @@ public class AdsServiceImp implements AdsService {
     public AdsDTO createAds(CreateAds createAds, MultipartFile file) {
         Path filePath = fileManager.getRandomPath(file, directoryPicture);
         Ads ads = mapper.createAdsToAds(createAds);
-        Users user = userService.getAuthorizedUser();
+        Users user = userService.getUser();
         ads.setUsers(user);
         Ads persistentAds = adsRepository.save(ads);
         Photo picture = createPicture(persistentAds, file, filePath);
@@ -71,8 +70,11 @@ public class AdsServiceImp implements AdsService {
 
     @Override
     public Ads getAds(int id) {
-        return adsRepository.findById(id).orElseThrow(
-                AdsNotFoundException::new
+        return adsRepository.findById(id).orElseThrow(() -> {
+                    String message = "Ad with " + id + " is not in the database";
+                    log.error(message);
+                    return new AdsNotFoundException(message);
+                }
         );
     }
 
@@ -89,7 +91,7 @@ public class AdsServiceImp implements AdsService {
         int photoId = getPhotoId(ads.getImage());
         Photo photo = photoService.getPhoto(photoId);
         photoService.deletePhoto(photo);
-        commentService.deleteCommentsByAdsId(id);
+        // TODO commentService.deleteCommentsByAdsId(id) проверить при удалении объявления;
         adsRepository.delete(ads);
     }
 
@@ -105,7 +107,7 @@ public class AdsServiceImp implements AdsService {
 
     @Override
     public ResponseWrapperAds getAdsMe() {
-        Users user = userService.getAuthorizedUser();
+        Users user = userService.getUser();
         Integer id = user.getId();
         List<AdsDTO> adsMe = adsRepository.findAdsByUserId(id)
                 .stream()

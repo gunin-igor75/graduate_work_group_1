@@ -19,20 +19,27 @@ import java.util.Objects;
 @AllArgsConstructor
 @Builder
 public class Users implements UserDetails {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-
     private Integer id;
+
+    @Column(name = "email", unique = true, nullable = false)
     private String email;
 
+    @Column(name = "first_name", nullable = false)
     private String firstName;
 
+    @Column(name = "last_name", nullable = false)
     private String lastName;
 
+    @Column(name = "phone", unique = true, nullable = false)
     private String phone;
 
+    @Column(name = "image")
     private String image;
 
+    @Column(name = "password", nullable = false)
     private String password;
 
     @Enumerated(value = EnumType.STRING)

@@ -35,9 +35,7 @@ public class AdsController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AdsDTO> createAds(@RequestPart(name = "properties") @Valid CreateAds createAds,
                                             @RequestPart(name = "image") MultipartFile file) {
-        if (fileManager.checkFile(file)) {
-            return ResponseEntity.badRequest().build();
-        }
+        fileManager.checkFile(file);
         AdsDTO adsDTO = adsService.createAds(createAds, file);
         return ResponseEntity.status(201).body(adsDTO);
     }
@@ -73,9 +71,7 @@ public class AdsController {
     @PreAuthorize("@customSecurityExpression.canAccessAds(#id)")
     public ResponseEntity<String> updatePictureAds(@PathVariable int id,
                                                    @RequestPart(name = "image") MultipartFile file) {
-        if (fileManager.checkFile(file)) {
-            return ResponseEntity.badRequest().build();
-        }
+        fileManager.checkFile(file);
         String link = adsService.updatePictureByAds(id, file);
         return ResponseEntity.ok(link);
     }

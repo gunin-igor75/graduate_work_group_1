@@ -5,16 +5,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.skypro.homework.dto.CommentDTO;
 import ru.skypro.homework.dto.ResponseWrapperComment;
-import ru.skypro.homework.entity.Ads;
 import ru.skypro.homework.entity.Comment;
 import ru.skypro.homework.entity.Users;
-import ru.skypro.homework.exception_handling.AdsNotFoundException;
 import ru.skypro.homework.exception_handling.CommentNotFoundException;
 import ru.skypro.homework.mapper.CommentMapper;
-import ru.skypro.homework.repository.AdsRepository;
 import ru.skypro.homework.repository.CommentRepository;
+import ru.skypro.homework.service.AdsService;
 import ru.skypro.homework.service.CommentService;
 import ru.skypro.homework.service.UserService;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -24,9 +23,13 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class CommentServiceImp implements CommentService {
+
     private final CommentRepository commentRepository;
+
     private final UserService userService;
-    private final AdsRepository adsRepository;
+
+    private final AdsService adsService;
+
     private final CommentMapper mapper;
 
     @Override
@@ -43,8 +46,11 @@ public class CommentServiceImp implements CommentService {
 
     @Override
     public Comment findComment(int id) {
-        return commentRepository.findById(id).orElseThrow(
-                CommentNotFoundException::new
+        return commentRepository.findById(id).orElseThrow(() -> {
+                    String message = "Comment with " + id + " is not in the database";
+                    log.error(message);
+                    return new CommentNotFoundException(message);
+                }
         );
     }
 
@@ -70,10 +76,8 @@ public class CommentServiceImp implements CommentService {
 
     @Override
     public CommentDTO createComment(int id, CommentDTO commentDTO) {
-        Ads ads = adsRepository.findById(id).orElseThrow(
-                AdsNotFoundException::new
-        );
-        Users user = userService.getAuthorizedUser();
+        Ads ads = adsService.getAds(id);
+        Users user = userService.getUser();
         Comment comment = new Comment();
         comment.setAds(ads);
         comment.setCreatedAt(Instant.now());

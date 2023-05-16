@@ -2,9 +2,10 @@ package ru.skypro.homework.controller;
 
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.skypro.homework.entity.Photo;
-import ru.skypro.homework.exception_handling.FileNotException;
+import ru.skypro.homework.exception_handling.FileDeleteException;
 import ru.skypro.homework.service.PhotoService;
 
 import javax.servlet.http.HttpServletResponse;
@@ -19,6 +20,7 @@ import java.nio.file.Paths;
 @RequestMapping("/image")
 @RequiredArgsConstructor
 @CrossOrigin(value = "http://localhost:3000")
+@Slf4j
 public class PhotoController {
 
     private final PhotoService photoService;
@@ -35,7 +37,9 @@ public class PhotoController {
             response.setContentLength((int) photo.getFileSize());
             in.transferTo(out);
         } catch (IOException e) {
-            throw new FileNotException();
+            String message = "File path " + path + " does not exist";
+            log.error(message);
+            throw new FileDeleteException(message);
         }
     }
 }

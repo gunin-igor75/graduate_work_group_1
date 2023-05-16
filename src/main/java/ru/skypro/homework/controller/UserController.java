@@ -23,7 +23,9 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 @CrossOrigin(value = "http://localhost:3000")
 @Validated
 public class UserController {
+
     private final UserService userService;
+
     private final FileManager fileManager;
 
     @PostMapping("/set_password")
@@ -39,7 +41,7 @@ public class UserController {
 
     @GetMapping("/me")
     public ResponseEntity<UserDTO> getUser() {
-        UserDTO userDTO = userService.getUser();
+        UserDTO userDTO = userService.getUserDTO();
         return ResponseEntity.ok(userDTO);
     }
 
@@ -51,9 +53,7 @@ public class UserController {
 
     @PatchMapping(path = "/me/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UserDTO> updateAvatarUser(@RequestPart(name = "image") MultipartFile file) {
-        if (fileManager.checkFile(file)) {
-            return ResponseEntity.badRequest().build();
-        }
+        fileManager.checkFile(file);
         UserDTO userDTO = userService.createOrUpdateAvatar(file);
         log.info(userDTO.toString());
         return ResponseEntity.ok(userDTO);
