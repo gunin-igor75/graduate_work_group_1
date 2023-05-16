@@ -5,6 +5,7 @@ import org.mapstruct.Mapping;
 import ru.skypro.homework.dto.AdsDTO;
 import ru.skypro.homework.dto.CreateAds;
 import ru.skypro.homework.dto.FullAds;
+import ru.skypro.homework.entity.Ads;
 
 
 @Mapper(componentModel = "spring")

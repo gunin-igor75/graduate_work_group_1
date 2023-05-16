@@ -27,14 +27,6 @@ public class FileManager {
         }
     }
 
-    private boolean isGoodFile(MultipartFile file) {
-        String filename = file.getOriginalFilename();
-        return file.getSize() == 0
-                || filename == null
-                || !Objects.requireNonNull(file.getContentType()).contains("image");
-    }
-
-
     public void checkExistFileAndDelete(String filePath) {
         if (filePath != null) {
             Path path = Paths.get(filePath);
@@ -68,12 +60,16 @@ public class FileManager {
         return Path.of(directory, subsequence + "." + extension);
     }
 
+    private boolean isGoodFile(MultipartFile file) {
+        String filename = file.getOriginalFilename();
+        return file.getSize() == 0
+                || filename == null
+                || !Objects.requireNonNull(file.getContentType()).contains("image");
+    }
+
     private String getExtension(String fileName) {
         if (fileName != null) {
-            if (fileName.contains(".")) {
-                return fileName.substring(fileName.lastIndexOf(".") + 1);
-            }
-            return "&.jpg";
+            return fileName.substring(fileName.lastIndexOf(".") + 1);
         }
         String message = "File is null";
         log.error(message);

@@ -17,7 +17,6 @@ import java.util.Objects;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Users implements UserDetails {
 
     @Id
