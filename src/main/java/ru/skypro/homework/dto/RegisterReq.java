@@ -11,7 +11,7 @@ import javax.validation.constraints.Pattern;
 public class RegisterReq {
 
     @NotNull(message = "Email must be not null")
-    @Length(max = 255, message = "Email has min 0 symbol max 255 Symbol")
+    @Length(min = 8, max = 255, message = "Email has min 0 symbol max 255 Symbol")
     private String username;
 
     @NotNull(message = "Password must be not null")

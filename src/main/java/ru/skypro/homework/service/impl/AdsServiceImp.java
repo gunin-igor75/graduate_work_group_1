@@ -14,7 +14,6 @@ import ru.skypro.homework.exception_handling.AdsNotFoundException;
 import ru.skypro.homework.mapper.AdsMapper;
 import ru.skypro.homework.repository.AdsRepository;
 import ru.skypro.homework.service.AdsService;
-import ru.skypro.homework.service.CommentService;
 import ru.skypro.homework.service.PhotoService;
 import ru.skypro.homework.service.UserService;
 import ru.skypro.homework.util.FileManager;
@@ -29,11 +28,15 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class AdsServiceImp implements AdsService {
+
     private final AdsRepository adsRepository;
+
     private final FileManager fileManager;
+
     private final PhotoService photoService;
+
     private final UserService userService;
-    private final CommentService commentService;
+
     private final AdsMapper mapper;
 
     @Value("${ads.picture.dir.path}")
@@ -46,6 +49,7 @@ public class AdsServiceImp implements AdsService {
     @Override
     public ResponseWrapperAds getAllAds() {
         List<AdsDTO> ads = adsRepository.findAll().stream()
+                .sorted()
                 .map(mapper::adsToAdsDTO)
                 .collect(Collectors.toList());
         return ResponseWrapperAds.builder()
@@ -59,7 +63,7 @@ public class AdsServiceImp implements AdsService {
     public AdsDTO createAds(CreateAds createAds, MultipartFile file) {
         Path filePath = fileManager.getRandomPath(file, directoryPicture);
         Ads ads = mapper.createAdsToAds(createAds);
-        Users user = userService.getAuthorizedUser();
+        Users user = userService.getUser();
         ads.setUsers(user);
         Ads persistentAds = adsRepository.save(ads);
         Photo picture = createPicture(persistentAds, file, filePath);
@@ -71,9 +75,13 @@ public class AdsServiceImp implements AdsService {
 
     @Override
     public Ads getAds(int id) {
-        return adsRepository.findById(id).orElseThrow(
-                AdsNotFoundException::new
-        );
+        Optional<Ads> adsOrEmpty = findAds(id);
+        if (adsOrEmpty.isEmpty()) {
+            String message = "Ad with " + id + " is not in the database";
+            log.error(message);
+            throw new AdsNotFoundException(message);
+        }
+        return adsOrEmpty.get();
     }
 
     @Override
@@ -89,7 +97,6 @@ public class AdsServiceImp implements AdsService {
         int photoId = getPhotoId(ads.getImage());
         Photo photo = photoService.getPhoto(photoId);
         photoService.deletePhoto(photo);
-        commentService.deleteCommentsByAdsId(id);
         adsRepository.delete(ads);
     }
 
@@ -105,10 +112,11 @@ public class AdsServiceImp implements AdsService {
 
     @Override
     public ResponseWrapperAds getAdsMe() {
-        Users user = userService.getAuthorizedUser();
+        Users user = userService.getUser();
         Integer id = user.getId();
         List<AdsDTO> adsMe = adsRepository.findAdsByUserId(id)
                 .stream()
+                .sorted()
                 .map(mapper::adsToAdsDTO)
                 .collect(Collectors.toList());
         return ResponseWrapperAds.builder()
@@ -131,10 +139,14 @@ public class AdsServiceImp implements AdsService {
         return ads.getImage();
     }
 
+    private Optional<Ads> findAds(int id) {
+        return adsRepository.findById(id);
+    }
+    
     @Override
     public boolean isOwnerAds(int adsId, Integer usersId) {
-        Optional<Ads> adsOrNull = adsRepository.findAdsByIdAndUsersId(adsId, usersId);
-        return adsOrNull.isPresent();
+        Optional<Ads> adsOrEmpty = adsRepository.findAdsByIdAndUsersId(adsId, usersId);
+        return adsOrEmpty.isPresent();
     }
 
     private Photo createPicture(Ads ads, MultipartFile file, Path path) {
@@ -147,7 +159,7 @@ public class AdsServiceImp implements AdsService {
     }
 
     private int getPhotoId(String endpoint) {
-        String number = endpoint.substring(endpoint.length() - 1);
+        String number = endpoint.substring(endpoint.lastIndexOf("/") + 1);
         return Integer.parseInt(number);
     }
 }

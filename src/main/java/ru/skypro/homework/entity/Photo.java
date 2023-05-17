@@ -9,20 +9,25 @@ import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
+@Table(name = "photo")
 @Inheritance
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Photo {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(nullable = false)
     private String filePath;
 
+    @Column(nullable = false)
     private String mediaType;
 
+    @Column(nullable = false)
     private long fileSize;
 
     @Override

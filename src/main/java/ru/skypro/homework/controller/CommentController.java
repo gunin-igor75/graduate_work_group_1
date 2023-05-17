@@ -17,6 +17,7 @@ import javax.validation.Valid;
 @CrossOrigin(value = "http://localhost:3000")
 @Validated
 public class CommentController {
+
     private final CommentService commentService;
 
     @GetMapping("{id}/comments")

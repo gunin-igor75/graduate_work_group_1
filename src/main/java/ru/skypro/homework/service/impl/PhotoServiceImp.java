@@ -1,6 +1,7 @@
 package ru.skypro.homework.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.skypro.homework.entity.Avatar;
 import ru.skypro.homework.entity.Photo;
@@ -8,21 +9,29 @@ import ru.skypro.homework.entity.Users;
 import ru.skypro.homework.exception_handling.PhotoNotFoundException;
 import ru.skypro.homework.repository.PhotoRepository;
 import ru.skypro.homework.service.PhotoService;
+import ru.skypro.homework.util.FileManager;
 
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PhotoServiceImp implements PhotoService {
 
     private final PhotoRepository photoRepository;
 
+    private final FileManager fileManager;
+
     @Override
     public Photo getPhoto(int id) {
-        return photoRepository.findById(id).orElseThrow(
-                PhotoNotFoundException::new
+        return photoRepository.findById(id).orElseThrow(() -> {
+                    String message = "Photo with " + id + " is not in the database";
+                    log.error(message);
+                    return new PhotoNotFoundException(message);
+                }
         );
     }
+
     @Override
     public Photo getAvatarByUsersIdOrGetNew(Users user) {
         Integer userId = user.getId();
@@ -31,17 +40,16 @@ public class PhotoServiceImp implements PhotoService {
 
     @Override
     public Photo createOrUpdatePhoto(Photo photo) {
-        if (photo == null) {
-            throw new PhotoNotFoundException();
-        }
-       return photoRepository.save(photo);
+        return photoRepository.save(photo);
     }
 
     @Override
     public Photo getPictureByAdsId(int adsId) {
         Optional<Photo> picture = photoRepository.findPictureByAdsId(adsId);
         if (picture.isEmpty()) {
-            throw new PhotoNotFoundException();
+            String message = "Photo with " + adsId + "ad is not in the database";
+            log.error(message);
+            throw new PhotoNotFoundException(message);
         }
         return picture.get();
     }
@@ -50,6 +58,8 @@ public class PhotoServiceImp implements PhotoService {
     public void deletePhoto(Photo photo) {
         Integer id = photo.getId();
         Photo photoPersistent = getPhoto(id);
+        String filePath = photoPersistent.getFilePath();
+        fileManager.checkExistFileAndDelete(filePath);
         photoRepository.delete(photoPersistent);
     }
 }

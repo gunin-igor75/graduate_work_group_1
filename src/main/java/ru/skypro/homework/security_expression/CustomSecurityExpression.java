@@ -19,19 +19,19 @@ public class CustomSecurityExpression {
     private final CommentService commentService;
 
     public boolean canAccessAds(int adsId) {
-        Users user = userService.getAuthorizedUser();
+        Users user = userService.getUser();
         Integer userId = user.getId();
         return adsService.isOwnerAds(adsId, userId) || isAdmin();
     }
 
     public boolean canAccessComment(int commentId) {
-        Users user = userService.getAuthorizedUser();
+        Users user = userService.getUser();
         Integer userId = user.getId();
         return commentService.isOwnerComment(commentId, userId) || isAdmin();
     }
 
     private boolean isAdmin() {
-        Users user = userService.getAuthorizedUser();
+        Users user = userService.getUser();
         return user.getRole() == Role.ADMIN;
     }
 }
