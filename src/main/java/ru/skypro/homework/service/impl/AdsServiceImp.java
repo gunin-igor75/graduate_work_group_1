@@ -49,8 +49,8 @@ public class AdsServiceImp implements AdsService {
     @Override
     public ResponseWrapperAds getAllAds() {
         List<AdsDTO> ads = adsRepository.findAll().stream()
-                .map(mapper::adsToAdsDTO)
                 .sorted()
+                .map(mapper::adsToAdsDTO)
                 .collect(Collectors.toList());
         return ResponseWrapperAds.builder()
                 .count(ads.size())
