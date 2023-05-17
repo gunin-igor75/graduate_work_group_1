@@ -20,7 +20,7 @@ import java.util.UUID;
 public class FileManager {
 
     public void checkFile(MultipartFile file) {
-        if (!isGoodFile(file)) {
+        if (isGoodFile(file)) {
             String message = "file size zero or no picture";
             log.error(message);
             throw new FileCreateAndUpLoadException(message);

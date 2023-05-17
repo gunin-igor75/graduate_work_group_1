@@ -9,6 +9,7 @@ import ru.skypro.homework.entity.Users;
 import ru.skypro.homework.exception_handling.PhotoNotFoundException;
 import ru.skypro.homework.repository.PhotoRepository;
 import ru.skypro.homework.service.PhotoService;
+import ru.skypro.homework.util.FileManager;
 
 import java.util.Optional;
 
@@ -18,6 +19,8 @@ import java.util.Optional;
 public class PhotoServiceImp implements PhotoService {
 
     private final PhotoRepository photoRepository;
+
+    private final FileManager fileManager;
 
     @Override
     public Photo getPhoto(int id) {
@@ -55,6 +58,8 @@ public class PhotoServiceImp implements PhotoService {
     public void deletePhoto(Photo photo) {
         Integer id = photo.getId();
         Photo photoPersistent = getPhoto(id);
+        String filePath = photoPersistent.getFilePath();
+        fileManager.checkExistFileAndDelete(filePath);
         photoRepository.delete(photoPersistent);
     }
 }

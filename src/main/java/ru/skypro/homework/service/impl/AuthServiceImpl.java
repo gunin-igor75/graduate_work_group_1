@@ -26,7 +26,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public boolean login(String userName, String password) {
-        Optional<Users> usersOrNull = userService.getRegistrationUser(userName);
+        Optional<Users> usersOrNull = userService.findUserByEmail(userName);
         if (usersOrNull.isEmpty()) {
             return false;
         }
@@ -36,7 +36,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public boolean register(RegisterReq registerReq) {
-        Optional<Users> usersOrNull = userService.getRegistrationUser(registerReq.getUsername());
+        Optional<Users> usersOrNull = userService.findUserByEmail(registerReq.getUsername());
         if (usersOrNull.isPresent()) {
             return false;
         }

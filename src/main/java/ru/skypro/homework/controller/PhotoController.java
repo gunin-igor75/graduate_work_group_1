@@ -3,6 +3,8 @@ package ru.skypro.homework.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import ru.skypro.homework.entity.Photo;
 import ru.skypro.homework.exception_handling.FileDeleteException;
@@ -16,7 +18,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-@RestController
+@Controller
 @RequestMapping("/image")
 @RequiredArgsConstructor
 @CrossOrigin(value = "http://localhost:3000")
@@ -25,7 +27,7 @@ public class PhotoController {
 
     private final PhotoService photoService;
 
-    @GetMapping("{id}")
+    @GetMapping(value = "{id}")
     public void downLoadImage(@PathVariable("id") int id,
                               HttpServletResponse response) {
         Photo photo =  photoService.getPhoto(id);

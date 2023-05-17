@@ -11,7 +11,8 @@ import org.springframework.web.multipart.MultipartFile;
 import ru.skypro.homework.dto.UserDTO;
 import ru.skypro.homework.entity.Photo;
 import ru.skypro.homework.entity.Users;
-import ru.skypro.homework.exception_handling.ResourceException;
+import ru.skypro.homework.exception_handling.AuthenticationException;
+import ru.skypro.homework.exception_handling.UserNotFoundException;
 import ru.skypro.homework.mapper.UserMapper;
 import ru.skypro.homework.repository.UserRepository;
 import ru.skypro.homework.service.PhotoService;
@@ -75,7 +76,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserDTO createOrUpdateAvatar(MultipartFile file) {
+    public void createOrUpdateAvatar(MultipartFile file) {
         Users user = getUser();
         Path filePath = fileManager.getRandomPath(file, directoryAvatar);
         Photo avatar = photoService.getAvatarByUsersIdOrGetNew(user);
@@ -85,19 +86,18 @@ public class UserServiceImpl implements UserService {
         avatar.setFileSize(file.getSize());
         avatar.setMediaType(file.getContentType());
         Photo photo = photoService.createOrUpdatePhoto(avatar);
-        Users newUser = checkUserAvatarExist(user, photo.getId());
+        checkUserAvatarExist(user, photo.getId());
         fileManager.upLoadFile(file, filePath);
-        return mapper.userToUserDTO(newUser);
     }
 
     @Override
     public UserDTO getUserDTO() {
-        Users authorizedUser = getUser();
-        return mapper.userToUserDTO(authorizedUser);
+        Users user = getUser();
+        return mapper.userToUserDTO(user);
     }
 
     @Override
-    public Optional<Users> getRegistrationUser(String email) {
+    public Optional<Users> findUserByEmail(String email) {
         return userRepository.findByEmail(email);
     }
 
@@ -107,41 +107,49 @@ public class UserServiceImpl implements UserService {
         return getUsersByEmail(userName);
     }
 
+    @Override
+    public boolean checkUserUpdate(UserDTO userDTO) {
+        Users user = getUser();
+        return user.getFirstName().equals(userDTO.getFirstName())
+                && user.getLastName().equals(userDTO.getLastName())
+                && user.getPhone().equals(userDTO.getPhone());
+    }
+
     private String getUserName() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication instanceof Users) {
-            Users principal = (Users) authentication.getPrincipal();
+        Object obj = authentication.getPrincipal();
+        if (obj instanceof Users) {
+            Users principal = (Users) obj;
             return principal.getUsername();
         }
         String message = "There is no user in authentication";
         log.error(message);
-        throw new ResourceException(message);
+        throw new AuthenticationException(message);
     }
 
     private Users getUsersByEmail(String email) {
-        Optional<Users> usersOrNull = getRegistrationUser(email);
+        Optional<Users> usersOrNull = findUserByEmail(email);
         if (usersOrNull.isEmpty()) {
-            String message = "The authenticated user is not in the database";
+            String message = "User with email " + email + " is not in the database";
             log.error(message);
-            throw new ResourceException(message);
+            throw new UserNotFoundException(message);
         }
         return usersOrNull.get();
     }
 
     private Users getUserById(Integer id) {
         return userRepository.findById(id).orElseThrow(() -> {
-                    String message = "The authenticated user is not in the database";
+                    String message = "user with id " + id + " is not in the database";
                     log.error(message);
-                    return new ResourceException(message);
+                    return new UserNotFoundException(message);
                 }
         );
     }
 
-    private Users checkUserAvatarExist(Users user, Integer id) {
+    private void checkUserAvatarExist(Users user, Integer id) {
         if (user.getImage() == null) {
             user.setImage(endpointImage + id);
-            return userRepository.save(user);
+            userRepository.save(user);
         }
-        return user;
     }
 }

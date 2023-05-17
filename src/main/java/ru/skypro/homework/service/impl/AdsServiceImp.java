@@ -14,7 +14,6 @@ import ru.skypro.homework.exception_handling.AdsNotFoundException;
 import ru.skypro.homework.mapper.AdsMapper;
 import ru.skypro.homework.repository.AdsRepository;
 import ru.skypro.homework.service.AdsService;
-import ru.skypro.homework.service.CommentService;
 import ru.skypro.homework.service.PhotoService;
 import ru.skypro.homework.service.UserService;
 import ru.skypro.homework.util.FileManager;
@@ -29,10 +28,15 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class AdsServiceImp implements AdsService {
+
     private final AdsRepository adsRepository;
+
     private final FileManager fileManager;
+
     private final PhotoService photoService;
+
     private final UserService userService;
+
     private final AdsMapper mapper;
 
     @Value("${ads.picture.dir.path}")
@@ -46,6 +50,7 @@ public class AdsServiceImp implements AdsService {
     public ResponseWrapperAds getAllAds() {
         List<AdsDTO> ads = adsRepository.findAll().stream()
                 .map(mapper::adsToAdsDTO)
+                .sorted()
                 .collect(Collectors.toList());
         return ResponseWrapperAds.builder()
                 .count(ads.size())
@@ -70,12 +75,13 @@ public class AdsServiceImp implements AdsService {
 
     @Override
     public Ads getAds(int id) {
-        return adsRepository.findById(id).orElseThrow(() -> {
-                    String message = "Ad with " + id + " is not in the database";
-                    log.error(message);
-                    return new AdsNotFoundException(message);
-                }
-        );
+        Optional<Ads> adsOrEmpty = findAds(id);
+        if (adsOrEmpty.isEmpty()) {
+            String message = "Ad with " + id + " is not in the database";
+            log.error(message);
+            throw new AdsNotFoundException(message);
+        }
+        return adsOrEmpty.get();
     }
 
     @Override
@@ -111,6 +117,7 @@ public class AdsServiceImp implements AdsService {
         Integer id = user.getId();
         List<AdsDTO> adsMe = adsRepository.findAdsByUserId(id)
                 .stream()
+                .sorted()
                 .map(mapper::adsToAdsDTO)
                 .collect(Collectors.toList());
         return ResponseWrapperAds.builder()
@@ -133,10 +140,14 @@ public class AdsServiceImp implements AdsService {
         return ads.getImage();
     }
 
+    private Optional<Ads> findAds(int id) {
+        return adsRepository.findById(id);
+    }
+    
     @Override
     public boolean isOwnerAds(int adsId, Integer usersId) {
-        Optional<Ads> adsOrNull = adsRepository.findAdsByIdAndUsersId(adsId, usersId);
-        return adsOrNull.isPresent();
+        Optional<Ads> adsOrEmpty = adsRepository.findAdsByIdAndUsersId(adsId, usersId);
+        return adsOrEmpty.isPresent();
     }
 
     private Photo createPicture(Ads ads, MultipartFile file, Path path) {
@@ -149,7 +160,7 @@ public class AdsServiceImp implements AdsService {
     }
 
     private int getPhotoId(String endpoint) {
-        String number = endpoint.substring(endpoint.length() - 1);
+        String number = endpoint.substring(endpoint.lastIndexOf("/") + 1);
         return Integer.parseInt(number);
     }
 }

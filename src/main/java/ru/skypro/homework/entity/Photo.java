@@ -41,4 +41,14 @@ public class Photo {
     public int hashCode() {
         return Objects.hash(id);
     }
+
+    @Override
+    public String toString() {
+        return "Photo{" +
+                "id=" + id +
+                ", filePath='" + filePath + '\'' +
+                ", mediaType='" + mediaType + '\'' +
+                ", fileSize=" + fileSize +
+                '}';
+    }
 }

@@ -41,9 +41,9 @@ public class AuthController {
         Role role = req.getRole() == null ? USER : req.getRole();
         req.setRole(role);
         if (authService.register(req)) {
-            return ResponseEntity.ok().build();
+            return ResponseEntity.status(HttpStatus.CREATED).build();
         } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
 }

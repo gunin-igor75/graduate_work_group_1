@@ -11,7 +11,6 @@ import ru.skypro.homework.entity.Users;
 public interface UserMapper {
    UserDTO userToUserDTO(Users users);
 
-   Users userDTOToUsers(UserDTO userDTO);
    @Mapping(target = "email", source = "username")
    Users registerReqToUsers(RegisterReq registerReq);
 }

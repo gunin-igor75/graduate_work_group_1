@@ -35,44 +35,15 @@ public class CommentServiceImp implements CommentService {
 
     @Override
     public ResponseWrapperComment getResponseCommentsByAdsId(int id) {
+        adsService.getAds(id);
         List<CommentDTO> comments = getCommentsByAdsId(id).stream()
+                .sorted()
                 .map(mapper::commentToCommentDTO)
                 .collect(Collectors.toList());
         return ResponseWrapperComment.builder()
                 .count(comments.size())
                 .results(comments)
                 .build();
-    }
-
-
-    @Override
-    public Comment findComment(int id) {
-        return commentRepository.findById(id).orElseThrow(() -> {
-                    String message = "Comment with " + id + " is not in the database";
-                    log.error(message);
-                    return new CommentNotFoundException(message);
-                }
-        );
-    }
-
-    @Override
-    public void deleteComment(int id) {
-        Comment comment = findComment(id);
-        commentRepository.delete(comment);
-    }
-
-    @Override
-    public void deleteCommentsByAdsId(int adsId) {
-        commentRepository.deleteCommentByAds_Id(adsId);
-    }
-
-    @Override
-    public CommentDTO updateComment(int id, CommentDTO commentDTO) {
-        Comment comment = findComment(id);
-        comment.setText(commentDTO.getText());
-        comment.setCreatedAt(Instant.now());
-        Comment newComment = commentRepository.save(comment);
-        return mapper.commentToCommentDTO(newComment);
     }
 
     @Override
@@ -86,6 +57,31 @@ public class CommentServiceImp implements CommentService {
         comment.setUsers(user);
         Comment persistentComment = commentRepository.save(comment);
         return mapper.commentToCommentDTO(persistentComment);
+    }
+
+    @Override
+    public void deleteComment(int id) {
+        Comment comment = findComment(id);
+        commentRepository.delete(comment);
+    }
+
+    @Override
+    public Comment findComment(int id) {
+        return commentRepository.findById(id).orElseThrow(() -> {
+                    String message = "Comment with " + id + " is not in the database";
+                    log.error(message);
+                    return new CommentNotFoundException(message);
+                }
+        );
+    }
+
+    @Override
+    public CommentDTO updateComment(int id, CommentDTO commentDTO) {
+        Comment comment = findComment(id);
+        comment.setText(commentDTO.getText());
+        comment.setCreatedAt(Instant.now());
+        Comment newComment = commentRepository.save(comment);
+        return mapper.commentToCommentDTO(newComment);
     }
 
     @Override

@@ -20,22 +20,28 @@ public class SecondHandGlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exceptionBody);
     }
 
+    @ExceptionHandler(FileCreateAndUpLoadException.class)
+    public ResponseEntity<ExceptionBody> handlerFileCreateAndUpLoad(FileCreateAndUpLoadException e) {
+        ExceptionBody exceptionBody = new ExceptionBody(e.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ExceptionBody> handlerException(Exception e) {
         ExceptionBody exceptionBody = new ExceptionBody(e.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exceptionBody);
     }
 
-    @ExceptionHandler(ResourceException.class)
-    public ResponseEntity<ExceptionBody> handlerResourceException(ResourceException e) {
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ExceptionBody> handlerAuthentication(AuthenticationException e) {
         ExceptionBody exceptionBody = new ExceptionBody(e.getMessage());
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exceptionBody);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exceptionBody);
     }
 
-    @ExceptionHandler(FileCreateAndUpLoadException.class)
-    public ResponseEntity<ExceptionBody> handlerFileCreateAndUpLoad(FileCreateAndUpLoadException e) {
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ExceptionBody> handlerUserNotFound(UserNotFoundException e) {
         ExceptionBody exceptionBody = new ExceptionBody(e.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exceptionBody);
     }
 
     @ExceptionHandler(AdsNotFoundException.class)
