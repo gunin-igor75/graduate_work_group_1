@@ -97,7 +97,6 @@ public class AdsServiceImp implements AdsService {
         int photoId = getPhotoId(ads.getImage());
         Photo photo = photoService.getPhoto(photoId);
         photoService.deletePhoto(photo);
-        // TODO commentService.deleteCommentsByAdsId(id) проверить при удалении объявления;
         adsRepository.delete(ads);
     }
 

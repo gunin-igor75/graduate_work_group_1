@@ -15,28 +15,30 @@ import java.util.Objects;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Ads implements Comparable<Ads>{
+public class Ads implements Comparable<Ads> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "image")
     private String image;
 
-    @Column(name = "price", nullable = false)
+    @Column(nullable = false)
     private Integer price;
 
-    @Column(name = "title", unique = true, nullable = false)
+    @Column(unique = true, nullable = false)
     private String title;
 
-    @Column(name = "description", unique = true, nullable = false)
+    @Column(unique = true, nullable = false)
     private String description;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Users users;
 
-    @OneToMany(mappedBy = "ads", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(
+            mappedBy = "ads",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
     private List<Comment> comments;
 
     @Override

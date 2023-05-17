@@ -28,7 +28,7 @@ public class PhotoController {
 
     private final PhotoService photoService;
 
-    @GetMapping(value = "{id}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @GetMapping(value = "{id}", produces = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<byte[]> downLoadImage(@PathVariable("id") int id) {
         Photo photo =  photoService.getPhoto(id);
         Path path = Paths.get(photo.getFilePath());

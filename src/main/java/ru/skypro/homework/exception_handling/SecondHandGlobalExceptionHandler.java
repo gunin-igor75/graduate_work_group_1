@@ -26,12 +26,6 @@ public class SecondHandGlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ExceptionBody> handlerException(Exception e) {
-        ExceptionBody exceptionBody = new ExceptionBody(e.getMessage());
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exceptionBody);
-    }
-
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ExceptionBody> handlerAuthentication(AuthenticationException e) {
         ExceptionBody exceptionBody = new ExceptionBody(e.getMessage());

@@ -9,6 +9,7 @@ import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
+@Table(name = "photo")
 @Inheritance
 @Getter
 @Setter
@@ -20,13 +21,13 @@ public class Photo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "file_path", nullable = false)
+    @Column(nullable = false)
     private String filePath;
 
-    @Column(name = "media_type", nullable = false)
+    @Column(nullable = false)
     private String mediaType;
 
-    @Column(name = "file_size", nullable = false)
+    @Column(nullable = false)
     private long fileSize;
 
     @Override
@@ -40,15 +41,5 @@ public class Photo {
     @Override
     public int hashCode() {
         return Objects.hash(id);
-    }
-
-    @Override
-    public String toString() {
-        return "Photo{" +
-                "id=" + id +
-                ", filePath='" + filePath + '\'' +
-                ", mediaType='" + mediaType + '\'' +
-                ", fileSize=" + fileSize +
-                '}';
     }
 }

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <preConditions>
+        <dbms type="postgresql"/>
+    </preConditions>
+
+    <!--аналог коммита-->
+    <!--тэг - метка в скрипте к ней можно откатиться-->
+    <!--id=0 пустая база данных -->
+
+    <changeSet id="0" author="igor">
+        <tagDatabase tag="db_init"/>
+    </changeSet>
+
+    <!--хорошая практика в корневой скрипт подключать другие файлы с помощью директивы include-->
+    <!--relativeToChangelogFile - сохранялся относительный путь к файлу-->
+
+    <include file="v-1.0/db.changelog-v.1.0.xml" relativeToChangelogFile="true"/>
+
+    <changeSet id="5" author="igor">
+        <tagDatabase tag="v.1.0"/>
+    </changeSet>
+
+</databaseChangeLog>

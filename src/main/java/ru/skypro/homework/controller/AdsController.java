@@ -30,7 +30,6 @@ public class AdsController {
     @GetMapping
     public ResponseEntity<ResponseWrapperAds> getAllAds() {
         ResponseWrapperAds allAds = adsService.getAllAds();
-        System.out.println(allAds);
         return ResponseEntity.ok(allAds);
     }
 

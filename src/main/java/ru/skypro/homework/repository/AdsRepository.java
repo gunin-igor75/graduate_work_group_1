@@ -12,6 +12,5 @@ public interface AdsRepository extends JpaRepository<Ads, Integer> {
     @Query(value = "select a.* from ads a  where a.users_id=?1", nativeQuery = true)
     List<Ads> findAdsByUserId(Integer id);
 
-    List<Ads> findByTitleLike(String title);
     Optional<Ads> findAdsByIdAndUsersId(int adsId, Integer usersId);
 }
