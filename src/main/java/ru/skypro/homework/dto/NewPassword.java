@@ -1,11 +1,14 @@
 package ru.skypro.homework.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotNull;
 
 @Data
+@AllArgsConstructor
 public class NewPassword {
 
     private String currentPassword;

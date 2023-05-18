@@ -30,14 +30,18 @@ public class PhotoController {
 
     @GetMapping(value = "{id}", produces = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<byte[]> downLoadImage(@PathVariable("id") int id) {
-        Photo photo =  photoService.getPhoto(id);
+        Photo photo = photoService.getPhoto(id);
         Path path = Paths.get(photo.getFilePath());
-        try (InputStream in = Files.newInputStream(path)) {
-            byte[] bytes = in.readAllBytes();
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.parseMediaType(photo.getMediaType()));
-            headers.setContentLength(photo.getFileSize());
-            return ResponseEntity.status(HttpStatus.OK).headers(headers).body(bytes);
+        byte[] bytes = getBytes(path);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType(photo.getMediaType()));
+        headers.setContentLength(photo.getFileSize());
+        return ResponseEntity.status(HttpStatus.OK).headers(headers).body(bytes);
+    }
+
+    private byte[] getBytes(Path path) {
+        try {
+            return Files.readAllBytes(path);
         } catch (IOException e) {
             String message = "File path " + path + " does not exist";
             log.error(message);

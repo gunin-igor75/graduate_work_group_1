@@ -20,7 +20,7 @@ import java.util.UUID;
 public class FileManager {
 
     public void checkFile(MultipartFile file) {
-        if (isGoodFile(file)) {
+        if (isBadFile(file)) {
             String message = "file size zero or no picture";
             log.error(message);
             throw new FileCreateAndUpLoadException(message);
@@ -60,7 +60,7 @@ public class FileManager {
         return Path.of(directory, subsequence + "." + extension);
     }
 
-    private boolean isGoodFile(MultipartFile file) {
+    private boolean isBadFile(MultipartFile file) {
         String filename = file.getOriginalFilename();
         return file.getSize() == 0
                 || filename == null
