@@ -3,6 +3,7 @@ package ru.skypro.homework.dto;
 import lombok.*;
 
 @Data
+@Builder
 public class FullAds {
 
     private Integer pk;

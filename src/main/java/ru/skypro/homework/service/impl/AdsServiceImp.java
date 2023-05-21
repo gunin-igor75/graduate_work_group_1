@@ -75,7 +75,7 @@ public class AdsServiceImp implements AdsService {
 
     @Override
     public Ads getAds(int id) {
-        Optional<Ads> adsOrEmpty = findAds(id);
+        Optional<Ads> adsOrEmpty = adsRepository.findById(id);
         if (adsOrEmpty.isEmpty()) {
             String message = "Ad with " + id + " is not in the database";
             log.error(message);
@@ -139,10 +139,6 @@ public class AdsServiceImp implements AdsService {
         return ads.getImage();
     }
 
-    private Optional<Ads> findAds(int id) {
-        return adsRepository.findById(id);
-    }
-    
     @Override
     public boolean isOwnerAds(int adsId, Integer usersId) {
         Optional<Ads> adsOrEmpty = adsRepository.findAdsByIdAndUsersId(adsId, usersId);

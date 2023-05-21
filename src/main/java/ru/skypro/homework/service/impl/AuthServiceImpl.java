@@ -26,18 +26,18 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public boolean login(String userName, String password) {
-        Optional<Users> usersOrNull = userService.findUserByEmail(userName);
-        if (usersOrNull.isEmpty()) {
+        Optional<Users> usersOrEmpty = userService.findUserByEmail(userName);
+        if (usersOrEmpty.isEmpty()) {
             return false;
         }
-        Users user = usersOrNull.get();
+        Users user = usersOrEmpty.get();
         return encoder.matches(password, user.getPassword());
     }
 
     @Override
     public boolean register(RegisterReq registerReq) {
-        Optional<Users> usersOrNull = userService.findUserByEmail(registerReq.getUsername());
-        if (usersOrNull.isPresent()) {
+        Optional<Users> usersOrEmpty = userService.findUserByEmail(registerReq.getUsername());
+        if (usersOrEmpty.isPresent()) {
             return false;
         }
         Users user = mapper.registerReqToUsers(registerReq);

@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.util.Collection;
+import java.util.List;
 
 @Data
 @Builder
@@ -11,5 +12,5 @@ public class ResponseWrapperAds {
 
     private Integer count;
 
-    private Collection<AdsDTO> results;
+    private List<AdsDTO> results;
 }
