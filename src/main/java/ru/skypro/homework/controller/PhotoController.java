@@ -8,13 +8,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 import ru.skypro.homework.entity.Photo;
 import ru.skypro.homework.exception_handling.FileDeleteException;
 import ru.skypro.homework.service.PhotoService;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -28,7 +30,7 @@ public class PhotoController {
 
     private final PhotoService photoService;
 
-    @GetMapping(value = "{id}", produces = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @GetMapping(value = "{id}", produces = "image/*")
     public ResponseEntity<byte[]> downLoadImage(@PathVariable("id") int id) {
         Photo photo = photoService.getPhoto(id);
         Path path = Paths.get(photo.getFilePath());

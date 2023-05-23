@@ -6,13 +6,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import ru.skypro.homework.dto.UserDTO;
 import ru.skypro.homework.entity.Photo;
 import ru.skypro.homework.entity.Users;
-import ru.skypro.homework.exception_handling.AuthenticationException;
 import ru.skypro.homework.exception_handling.UserNotFoundException;
 import ru.skypro.homework.mapper.UserMapper;
 import ru.skypro.homework.repository.UserRepository;
@@ -125,7 +125,7 @@ public class UserServiceImpl implements UserService {
         }
         String message = "There is no user in authentication";
         log.error(message);
-        throw new AuthenticationException(message);
+        throw new UsernameNotFoundException(message);
     }
 
     private Users getUsersByEmail(String email) {

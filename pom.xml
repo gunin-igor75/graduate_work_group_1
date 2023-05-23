@@ -23,7 +23,7 @@
     <mapstruct.version>1.5.3.Final</mapstruct.version>
     <hibernate.validation.version>8.0.0.Final</hibernate.validation.version>
     <jakarta.validation.version>3.0.2</jakarta.validation.version>
-    <liquibase.version>4.22.0</liquibase.version>
+    <appache.common.lang.version>3.12.0</appache.common.lang.version>
   </properties>
 
   <dependencies>
@@ -98,6 +98,13 @@
     <dependency>
       <groupId>com.h2database</groupId>
       <artifactId>h2</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>${appache.common.lang.version}</version>
+      <scope>test</scope>
     </dependency>
 
   </dependencies>

@@ -1,11 +1,11 @@
 package ru.skypro.homework.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -44,11 +44,12 @@ import java.util.Optional;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static ru.skypro.homework.constant.Value.*;
+import static ru.skypro.homework.util.Value.*;
 
 @SpringBootTest
 @Import(WebSecurityConfig.class)
@@ -100,8 +101,8 @@ class AdsControllerTest {
 
     @Test
     @WithAnonymousUser
-    @DisplayName("getAllAds - вывести все объявления out ResponseWrapperAds")
-    public void getAllAdsTest() throws Exception {
+    @DisplayName("getAllAds - вывести все объявления out ResponseWrapperAds status 200")
+    public void getAllAdsStatusTest() throws Exception {
         List<Ads> ads = givenListAds();
 
         List<AdsDTO> adsDTO = givenListAdsDTO();
@@ -118,7 +119,7 @@ class AdsControllerTest {
 
     @Test
     @WithMockUser
-    @DisplayName("createAds - создание объявления status201 in file CreateAds out AdsDTO")
+    @DisplayName("createAds - создание объявления in file CreateAds out AdsDTO status 201")
     public void createAdsStatus201Test() throws Exception {
         Users users = givenUsers();
 
@@ -139,11 +140,13 @@ class AdsControllerTest {
 
         Photo photo = givenPhoto();
 
+        ArgumentCaptor<Photo> photoArgCap = ArgumentCaptor.forClass(Photo.class);
+
         doReturn(users).when(userService).getUser();
 
         when(adsRepository.save(any(Ads.class))).thenReturn(ads);
 
-        when(photoRepository.save(any(Photo.class))).thenReturn(photo);
+        when(photoRepository.save(photoArgCap.capture())).thenReturn(photo);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .multipart(HttpMethod.POST,"/ads")
@@ -156,11 +159,42 @@ class AdsControllerTest {
                 .andExpect(jsonPath("$.title").value(adsDTO.getTitle()))
                 .andExpect(jsonPath("$.price").value(adsDTO.getPrice()))
                 .andExpect(jsonPath("$.image").value(adsDTO.getImage()));
+
+        Photo actualePhoto = photoArgCap.getValue();
+        fileManager.checkExistFileAndDelete(actualePhoto.getFilePath());
+
     }
 
     @Test
     @WithMockUser
-    @DisplayName("getAds - получить объявление status 200 out FullAds")
+    @DisplayName("createAds - создание объявления  in file CreateAds out status 400")
+    public void createAdsStatus400Test() throws Exception {
+        Users users = givenUsers();
+
+        CreateAds createdAds = givenCreateAdsBad();
+
+        byte[] bytesImage = "ads cat".getBytes();
+        byte[] bytesCreateAds = objectMapper.writeValueAsBytes(createdAds);
+
+        MockPart partFile = new MockPart("image", "image.jpg", bytesImage);
+        partFile.getHeaders().setContentType(MediaType.IMAGE_JPEG);
+
+        MockPart partCreateAds = new MockPart("properties", "createAds", bytesCreateAds);
+        partCreateAds.getHeaders().setContentType(MediaType.APPLICATION_JSON);
+
+        doReturn(users).when(userService).getUser();
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .multipart(HttpMethod.POST,"/ads")
+                        .part(partCreateAds)
+                        .part(partFile))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("getAds - получить объявление in id  out FullAds status 200")
     public void getAdsStatus200Test() throws Exception {
         int pk = 1;
 
@@ -190,7 +224,25 @@ class AdsControllerTest {
 
     @Test
     @WithMockUser
-    @DisplayName("deleteAds удаление объявления in id out No CONTENT")
+    @DisplayName("getAds - получить объявление in id out status 404")
+    public void getAdsStatus404Test() throws Exception {
+        int pk = 1;
+
+        Users users = givenUsers();
+
+        doReturn(users).when(userService).getUser();
+
+        when(adsRepository.findById(pk)).thenReturn(Optional.empty());
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .get("/ads/{id}", pk))
+                .andDo(print())
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("deleteAds удаление объявления in id out status 204")
     public void deleteAdsTesStatusNoContent() throws Exception {
         int pk = 1;
 
@@ -216,7 +268,7 @@ class AdsControllerTest {
 
     @Test
     @WithMockUser
-    @DisplayName("updateAds - обновление ads status 200 in CreateAds out AdsDTO")
+    @DisplayName("updateAds - обновление ads in CreateAds out AdsDTO status 200")
     public void updateAdsTestStatus200() throws Exception{
         Users users = givenUsers();
 
@@ -252,7 +304,7 @@ class AdsControllerTest {
 
     @Test
     @WithMockUser
-    @DisplayName("getAdsMe - показать ads зарегестрированного user status 200 out ResponseWrapperAds")
+    @DisplayName("getAdsMe - показать ads зарегестрированного user out ResponseWrapperAds status 200")
     public void getAdsMeStatus200Test() throws Exception {
         Users users = givenUsers();
 
@@ -274,7 +326,7 @@ class AdsControllerTest {
 
     @Test
     @WithMockUser
-    @DisplayName("updatePictureAds - обновление фото ads status 200 in id file out link")
+    @DisplayName("updatePictureAds - обновление фото ads in id file out link status 200")
     public void updatePictureAdsStatus200Test() throws Exception {
         int pk = 1;
 
@@ -304,24 +356,95 @@ class AdsControllerTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("/image/1")));
+
+        fileManager.checkExistFileAndDelete(photo.getFilePath());
     }
 
-    private JSONObject givenJsonCreateAds() throws JSONException {
-        String title = "add title ads";
-        String description  = "update ads test";
-        Integer price = 1000;
-        JSONObject jsonCreateAds = new JSONObject();
-        jsonCreateAds.put("title", title);
-        jsonCreateAds.put("description", description);
-        jsonCreateAds.put("price", price);
-        return jsonCreateAds;
+    @Test
+    @WithMockUser
+    @DisplayName("updatePictureAds - обновление фото ads in id file out link status 200")
+    public void updatePictureAdsStatus200AdminTest() throws Exception {
+        int pk = 1;
+
+        Users users = givenAdmin();
+
+        Photo photo = givenPhoto();
+
+        Ads ads = givenAds();
+
+        byte[] bytes = "test adsController".getBytes();
+        MockMultipartFile mockFile  =
+                new MockMultipartFile("image", "image.jpg", String.valueOf(MediaType.IMAGE_JPEG), bytes);
+
+        doReturn(users).when(userService).getUser();
+
+        when(photoRepository.findPictureByAdsId(pk)).thenReturn(Optional.of(photo));
+
+        when(photoRepository.save(any(Photo.class))).thenReturn(photo);
+
+        when(adsRepository.findById(pk)).thenReturn(Optional.of(ads));
+
+        when(adsRepository.findAdsByIdAndUsersId(pk, users.getId())).thenReturn(Optional.empty());
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .multipart(HttpMethod.PATCH,"/ads/{id}/image", pk)
+                        .file(mockFile))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("/image/1")));
+
+        fileManager.checkExistFileAndDelete(photo.getFilePath());
     }
 
-    private ResponseWrapperAds givenResponseWrapperAds(List<AdsDTO> adsDTO) {
-        return ResponseWrapperAds.builder()
-                .count(adsDTO.size())
-                .results(adsDTO)
-                .build();
+    @Test
+    @WithMockUser
+    @DisplayName("updatePictureAds - обновление фото ads in id file out link status 404")
+    public void updatePictureAdsStatus404Test() throws Exception {
+        int pk = 1;
+
+        Users users = givenUsers();
+
+        Ads ads = givenAds();
+
+        byte[] bytes = "test adsController".getBytes();
+        MockMultipartFile mockFile  =
+                new MockMultipartFile("image", "image.jpg", String.valueOf(MediaType.IMAGE_JPEG), bytes);
+
+        doReturn(users).when(userService).getUser();
+
+        when(photoRepository.findPictureByAdsId(pk)).thenReturn(Optional.empty());
+
+        when(adsRepository.findAdsByIdAndUsersId(pk, users.getId())).thenReturn(Optional.of(ads));
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .multipart(HttpMethod.PATCH,"/ads/{id}/image", pk)
+                        .file(mockFile))
+                .andDo(print())
+                .andExpect(status().isNotFound());
     }
 
+    @Test
+    @WithMockUser
+    @DisplayName("updatePictureAds - обновление фото ads in id file out link status 400")
+    public void updatePictureAdsStatus400Test() throws Exception {
+        int pk = 1;
+
+        Users users = givenUsers();
+
+        Ads ads = givenAds();
+
+        byte[] bytes = "test adsController".getBytes();
+        MockMultipartFile mockFile  =
+                new MockMultipartFile("image", "image.txt", String.valueOf(MediaType.TEXT_PLAIN), bytes);
+
+        doReturn(users).when(userService).getUser();
+
+        when(adsRepository.findAdsByIdAndUsersId(pk, users.getId())).thenReturn(Optional.of(ads));
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .multipart(HttpMethod.PATCH,"/ads/{id}/image", pk)
+                        .file(mockFile))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
 }

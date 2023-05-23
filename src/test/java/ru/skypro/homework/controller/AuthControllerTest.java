@@ -1,6 +1,5 @@
 package ru.skypro.homework.controller;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -17,15 +16,18 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import ru.skypro.homework.entity.Users;
 import ru.skypro.homework.mapper.UserMapper;
+import ru.skypro.homework.repository.UserRepository;
 import ru.skypro.homework.service.impl.AuthServiceImpl;
 import ru.skypro.homework.service.impl.UserServiceImpl;
 
 import java.util.Optional;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static ru.skypro.homework.constant.Value.givenUsers;
+import static ru.skypro.homework.util.Value.*;
 
 @SpringBootTest
 class AuthControllerTest {
@@ -33,19 +35,22 @@ class AuthControllerTest {
     @Autowired
     private WebApplicationContext context;
 
-    private MockMvc mockMvc;
+    @Autowired
+    private UserMapper mapper;
+
+    @Autowired
+    private PasswordEncoder encoder;
 
     @SpyBean
     private AuthServiceImpl authService;
 
-    @Autowired
-    private  PasswordEncoder encoder;
-
-    @MockBean
+    @SpyBean
     private UserServiceImpl userService;
 
-    @Autowired
-    private UserMapper mapper;
+    @MockBean
+    private UserRepository userRepository;
+
+    private MockMvc mockMvc;
 
     @BeforeEach
     public void setup() {
@@ -56,9 +61,9 @@ class AuthControllerTest {
     }
 
     @Test
-    @DisplayName("login - проверка пароля и имени пользователя status 200 in LoginReq ")
-    public void loginStatusOkTest() throws Exception{
-        String  username = "user@email.ru";
+    @DisplayName("login - проверка пароля и имени пользователя in LoginReq status 200")
+    public void loginStatus200Test() throws Exception {
+        String username = "user@email.ru";
         String password = "11111111";
 
         Users users = givenUsers();
@@ -68,17 +73,18 @@ class AuthControllerTest {
         when(userService.findUserByEmail(username)).thenReturn(Optional.of(users));
 
         mockMvc.perform(MockMvcRequestBuilders
-                .post("/login")
-                .content(jsonLoginReq.toString())
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON))
+                        .post("/login")
+                        .content(jsonLoginReq.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
                 .andExpect(status().isOk());
     }
 
     @Test
-    @DisplayName("login - проверка пароля и имени пользователя status Unauthorised in LoginReq ")
-    public void loginStatusUnauthorisedTest() throws Exception{
-        String  username = "user@email.ru";
+    @DisplayName("login - проверка пароля и имени пользователя in LoginReq status Unauthorised")
+    public void loginStatusUnauthorisedTest() throws Exception {
+        String username = "user@email.ru";
         String password = "55555555";
 
         Users users = givenUsers();
@@ -92,24 +98,30 @@ class AuthControllerTest {
                         .content(jsonLoginReq.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
-    @DisplayName("register - регистрация пользователя status CREATED in RegisterReq")
+    @DisplayName("register - регистрация пользователя in RegisterReq status CREATED")
     public void registerStatusCreatedTest() throws Exception {
         JSONObject jsonRegisterReq = givenJsonRegisterReq();
+
+        Users users = givenUsers();
+
+        when(userRepository.save(any(Users.class))).thenReturn(users);
 
         mockMvc.perform(MockMvcRequestBuilders
                         .post("/register")
                         .content(jsonRegisterReq.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
                 .andExpect(status().isCreated());
     }
 
     @Test
-    @DisplayName("register - регистрация пользователя status UNAUTHORIZED in RegisterReq")
+    @DisplayName("register - регистрация пользователя in RegisterReq status UNAUTHORIZED")
     public void registerStatusUnauthorisedTest() throws Exception {
         JSONObject jsonRegisterReq = givenJsonRegisterReq();
 
@@ -122,29 +134,21 @@ class AuthControllerTest {
                         .content(jsonRegisterReq.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
 
-    private JSONObject givenJsonLoginReq(String username, String password) throws JSONException {
-        JSONObject jsonLoginReq = new JSONObject();
-        jsonLoginReq.put("username", username);
-        jsonLoginReq.put("password", password);
-        return jsonLoginReq;
-    }
+    @Test
+    @DisplayName("register - регистрация пользователя in RegisterReq status 400")
+    public void registerStatus400Test() throws Exception {
+        JSONObject jsonRegisterReq = givenJsonRegisterReqBad();
 
-    private JSONObject givenJsonRegisterReq() throws JSONException {
-        String username = "user@mail.ru";
-        String firstName = "igor";
-        String lastname = "igoreck";
-        String phone = "+79139792520";
-        String password = "11111111";
-
-        JSONObject jsonRegisterReq = new JSONObject();
-        jsonRegisterReq.put("username", username);
-        jsonRegisterReq.put("firstName", firstName);
-        jsonRegisterReq.put("lastName", lastname);
-        jsonRegisterReq.put("phone", phone);
-        jsonRegisterReq.put("password", password);
-        return jsonRegisterReq;
+        mockMvc.perform(MockMvcRequestBuilders
+                        .post("/register")
+                        .content(jsonRegisterReq.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
     }
 }

@@ -29,7 +29,7 @@ public class WebSecurityConfig {
             "/webjars/**",
             "/login",
             "/register",
-            "/image"
+            "/image/**"
     };
 
     @Bean

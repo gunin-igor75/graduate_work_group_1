@@ -7,8 +7,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,12 +22,6 @@ public class SecondHandGlobalExceptionHandler {
     public ResponseEntity<ExceptionBody> handlerFileCreateAndUpLoad(FileCreateAndUpLoadException e) {
         ExceptionBody exceptionBody = new ExceptionBody(e.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);
-    }
-
-    @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<ExceptionBody> handlerAuthentication(AuthenticationException e) {
-        ExceptionBody exceptionBody = new ExceptionBody(e.getMessage());
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exceptionBody);
     }
 
     @ExceptionHandler(UserNotFoundException.class)
@@ -62,17 +54,6 @@ public class SecondHandGlobalExceptionHandler {
         List<FieldError> errors = e.getBindingResult().getFieldErrors();
         exceptionBody.setErrors(errors.stream()
                 .collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage)));
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);
-    }
-
-    @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<ExceptionBody> handleConstraintViolation(ConstraintViolationException e) {
-        ExceptionBody exceptionBody = new ExceptionBody("Validation failed.");
-        exceptionBody.setErrors(e.getConstraintViolations().stream()
-                .collect(Collectors.toMap(
-                        violation -> violation.getPropertyPath().toString(),
-                        ConstraintViolation::getMessage
-                )));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionBody);
     }
 }

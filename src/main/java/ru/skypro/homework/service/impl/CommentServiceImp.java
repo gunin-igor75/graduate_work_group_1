@@ -35,7 +35,6 @@ public class CommentServiceImp implements CommentService {
 
     @Override
     public ResponseWrapperComment getResponseCommentsByAdsId(int id) {
-        adsService.getAds(id);
         List<CommentDTO> comments = getCommentsByAdsId(id).stream()
                 .sorted()
                 .map(mapper::commentToCommentDTO)

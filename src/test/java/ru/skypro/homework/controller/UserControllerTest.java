@@ -19,9 +19,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.multipart.MultipartFile;
 import ru.skypro.homework.WebSecurityConfig;
 import ru.skypro.homework.dto.UserDTO;
+import ru.skypro.homework.entity.Photo;
 import ru.skypro.homework.entity.Users;
 import ru.skypro.homework.mapper.UserMapper;
 import ru.skypro.homework.repository.PhotoRepository;
@@ -34,14 +34,14 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static ru.skypro.homework.constant.Value.givenUserDTO;
-import static ru.skypro.homework.constant.Value.givenUsers;
+import static ru.skypro.homework.util.Value.*;
 
 @SpringBootTest
 @Import(WebSecurityConfig.class)
@@ -64,13 +64,13 @@ class UserControllerTest {
     @SpyBean
     private PhotoServiceImp photoService;
 
-    @MockBean
+    @SpyBean
     private FileManager fileManager;
 
     @Autowired
     private UserMapper userMapper;
 
-    @MockBean
+    @SpyBean
     private PhotoRepository photoRepository;
 
     @BeforeEach
@@ -83,25 +83,23 @@ class UserControllerTest {
 
     @Test
     @WithMockUser
-    @DisplayName("setPassword - поменять пароль in - NewPassword  out - status 200")
-    public void setPasswordTest() throws Exception {
+    @DisplayName("setPassword - поменять пароль in - NewPassword  out status 200")
+    public void setPasswordStatus200Test() throws Exception {
         String currentPassword = "11111111";
         String newPassword = "55555555";
-        JSONObject jsonPassword = new JSONObject();
-        jsonPassword.put("currentPassword", currentPassword);
-        jsonPassword.put("newPassword", newPassword);
+
+        JSONObject jsonPassword = givenNewPassword(currentPassword, newPassword);
 
         Users users = givenUsers();
 
-        when(userRepository.findByEmail(any(String.class))).thenReturn(Optional.of(users));
-
-        when(userRepository.save(any(Users.class))).thenReturn(users);
+        doReturn(users).when(userService).getUser();
 
         mockMvc.perform(MockMvcRequestBuilders
                         .post("/users/set_password")
                         .content(jsonPassword.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
                 .andExpect(status().isOk());
 
         assertThat(encoder.matches(newPassword, users.getPassword())).isTrue();
@@ -109,8 +107,52 @@ class UserControllerTest {
 
     @Test
     @WithMockUser
-    @DisplayName("getMe получить юзера  out - UserDTO")
-    public void getUserTest() throws Exception {
+    @DisplayName("setPassword - поменять пароль in - NewPassword  out status 404")
+    public void setPasswordStatus404Test() throws Exception {
+        String currentPassword = "11111115";
+        String newPassword = "55555555";
+
+        JSONObject jsonPassword = givenNewPassword(currentPassword, newPassword);
+
+        Users users = givenUsers();
+
+        doReturn(users).when(userService).getUser();
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .post("/users/set_password")
+                        .content(jsonPassword.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("setPassword - поменять пароль in - NewPassword  out status 400")
+    public void setPasswordStatus400Test() throws Exception {
+        String currentPassword = "11111111";
+        String newPassword =  givenRandomString(256);
+
+        JSONObject jsonPassword = givenNewPassword(currentPassword, newPassword);
+
+        Users users = givenUsers();
+
+        doReturn(users).when(userService).getUser();
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .post("/users/set_password")
+                        .content(jsonPassword.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("getMe получить юзера out - UserDTO status 200")
+    public void getUserStatus200Test() throws Exception {
         Users users = givenUsers();
 
         when(userRepository.findByEmail(any(String.class))).thenReturn(Optional.of(users));
@@ -123,19 +165,34 @@ class UserControllerTest {
                         .get("/users/me")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(userDTO.getId()))
                 .andExpect(jsonPath("$.email").value(userDTO.getEmail()))
                 .andExpect(jsonPath("$.firstName").value(userDTO.getFirstName()))
                 .andExpect(jsonPath("$.lastName").value(userDTO.getLastName()))
                 .andExpect(jsonPath("$.phone").value(userDTO.getPhone()));
-
     }
 
     @Test
     @WithMockUser
-    @DisplayName("updateUser обновить юзера - in - UserDTO  out - status 200 UserDto")
-    public void updateUserTestStatus200() throws Exception {
+    @DisplayName("getMe получить юзера  out - status 404")
+    public void getUserStatus404Test() throws Exception {
+
+        when(userRepository.findByEmail(any(String.class))).thenReturn(Optional.empty());
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .get("/users/me")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("updateUser обновить юзера  in - UserDTO  out - status 200 UserDto")
+    public void updateUserStatus200Test() throws Exception {
         JSONObject jsonUserDto = givenJsonUserDTOWithChanges();
 
         Users users = givenUsers();
@@ -151,33 +208,72 @@ class UserControllerTest {
                         .content(jsonUserDto.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(jsonUserDto.get("id")))
                 .andExpect(jsonPath("$.email").value(jsonUserDto.get("email")))
                 .andExpect(jsonPath("$.firstName").value(jsonUserDto.get("firstName")))
                 .andExpect(jsonPath("$.lastName").value(jsonUserDto.get("lastName")))
                 .andExpect(jsonPath("$.phone").value(jsonUserDto.get("phone")));
-
     }
 
     @Test
     @WithMockUser
-    @DisplayName("updateUser обновить юзера - in - UserDTO  out - status 204 UserDto")
+    @DisplayName("updateUser обновить юзера  in - UserDTO  out - status 204")
     public void updateUserTestStatus204() throws Exception {
         JSONObject jsonUserDto = givenJsonUserDTOWithoutChanges();
 
         Users users = givenUsers();
 
-        when(userRepository.findByEmail(any(String.class))).thenReturn(Optional.of(users));
-
-        when(userRepository.save(any(Users.class))).thenReturn(users);
+        doReturn(users).when(userService).getUser();
 
         mockMvc.perform(MockMvcRequestBuilders
                         .patch("/users/me")
                         .content(jsonUserDto.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
                 .andExpect(status().is(204));
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("updateUser обновить юзера  in - UserDTO  out - status 404")
+    public void updateUserTestStatus404() throws Exception {
+        JSONObject jsonUserDto = givenJsonUserDTOWithChanges();
+
+        Users users = givenUsers();
+
+        when(userRepository.findByEmail(any(String.class))).thenReturn(Optional.of(users));
+
+        when(userRepository.findById(any(Integer.class))).thenReturn(Optional.empty());
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .patch("/users/me")
+                        .content(jsonUserDto.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("updateUser обновить юзера  in - UserDTO  out - status 400")
+    public void updateUserTestStatus400() throws Exception {
+        JSONObject jsonUserDto = givenJsonUserDTOBad();
+
+        Users users = givenUsers();
+
+        doReturn(users).when(userService).getUser();
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .patch("/users/me")
+                        .content(jsonUserDto.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -187,27 +283,30 @@ class UserControllerTest {
 
         Users users = givenUsers();
 
+        Photo photo = givenPhoto();
 
-        when(userRepository.findByEmail(any(String.class))).thenReturn(Optional.of(users));
+        doReturn(users).when(userService).getUser();
 
-        when(userRepository.save(any(Users.class))).thenReturn(users);
-
-
-        doNothing().when(userService).createOrUpdateAvatar(any(MultipartFile.class));
+        when(photoRepository.findAvatarByUsersId(users.getId())).thenReturn(Optional.of(photo));
 
         byte[] bytes = "test".getBytes();
 
         MockMultipartFile file =
                 new MockMultipartFile("image", "img.jpg",
-                        MediaType.MULTIPART_FORM_DATA_VALUE, bytes);
+                        MediaType.IMAGE_JPEG.toString(), bytes);
 
         mockMvc.perform(multipart(HttpMethod.PATCH, "/users/me/image")
                         .file(file))
-                        .andExpect(status().isOk());
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        fileManager.checkExistFileAndDelete(photo.getFilePath());
+
     }
 
     @Test
     @WithAnonymousUser
+    @DisplayName("AnonymousUserTest - проверка вход анонимного юзера")
     public void AnonymousUserTest() throws Exception {
         Users users = givenUsers();
 
@@ -220,40 +319,6 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().is(401));
-    }
-
-    private JSONObject givenJsonUserDTOWithChanges() throws Exception {
-        Integer id = 1;
-        String email = "user@mail.ru";
-        String firstName = "oleg";
-        String lastName = "olegok";
-        String phone = "+79139792535";
-
-        JSONObject jsonUserDTO = new JSONObject();
-        jsonUserDTO.put("id", id);
-        jsonUserDTO.put("email", email);
-        jsonUserDTO.put("firstName", firstName);
-        jsonUserDTO.put("lastName", lastName);
-        jsonUserDTO.put("phone", phone);
-
-        return jsonUserDTO;
-    }
-
-    private JSONObject givenJsonUserDTOWithoutChanges() throws Exception {
-        Integer id = 1;
-        String email = "user@mail.ru";
-        String firstName = "igor";
-        String lastName = "igoreck";
-        String phone = "+79139792520";
-
-        JSONObject jsonUserDTO = new JSONObject();
-        jsonUserDTO.put("id", id);
-        jsonUserDTO.put("email", email);
-        jsonUserDTO.put("firstName", firstName);
-        jsonUserDTO.put("lastName", lastName);
-        jsonUserDTO.put("phone", phone);
-
-        return jsonUserDTO;
     }
 }
 
