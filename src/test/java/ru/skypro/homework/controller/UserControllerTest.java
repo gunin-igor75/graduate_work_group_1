@@ -70,7 +70,7 @@ class UserControllerTest {
     @Autowired
     private UserMapper userMapper;
 
-    @SpyBean
+    @MockBean
     private PhotoRepository photoRepository;
 
     @BeforeEach
@@ -288,6 +288,8 @@ class UserControllerTest {
         doReturn(users).when(userService).getUser();
 
         when(photoRepository.findAvatarByUsersId(users.getId())).thenReturn(Optional.of(photo));
+
+        when(photoRepository.save(any(Photo.class))).thenReturn(photo);
 
         byte[] bytes = "test".getBytes();
 
