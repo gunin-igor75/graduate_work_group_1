@@ -1,18 +1,12 @@
 package ru.skypro.homework.controller;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithAnonymousUser;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 import ru.skypro.homework.entity.Photo;
 import ru.skypro.homework.exception_handling.PhotoNotFoundException;
 import ru.skypro.homework.repository.PhotoRepository;
@@ -25,18 +19,11 @@ import java.util.Optional;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.IMAGE_JPEG;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static ru.skypro.homework.util.Value.givenPhotoTest;
 
-@SpringBootTest
-class PhotoControllerTest {
-
-    @Autowired
-    private WebApplicationContext context;
-
-    private MockMvc mockMvc;
+class PhotoControllerTest extends ControllerClassTest{
 
     @SpyBean
     private PhotoServiceImp photoService;
@@ -46,14 +33,6 @@ class PhotoControllerTest {
 
     @MockBean
     private FileManager fileManager;
-
-    @BeforeEach
-    public void setup() {
-        mockMvc = MockMvcBuilders
-                .webAppContextSetup(context)
-                .apply(springSecurity())
-                .build();
-    }
 
     @Test
     @WithAnonymousUser

@@ -1,25 +1,18 @@
 package ru.skypro.homework.controller;
 
 import org.json.JSONObject;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
-import ru.skypro.homework.WebSecurityConfig;
 import ru.skypro.homework.dto.UserDTO;
 import ru.skypro.homework.entity.Photo;
 import ru.skypro.homework.entity.Users;
@@ -36,21 +29,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static ru.skypro.homework.util.Value.*;
 
-@SpringBootTest
-@Import(WebSecurityConfig.class)
-class UserControllerTest {
-
-    @Autowired
-    private WebApplicationContext context;
-
-    private MockMvc mockMvc;
+class UserControllerTest extends ControllerClassTest{
 
     @Autowired
     private PasswordEncoder encoder;
@@ -72,14 +57,6 @@ class UserControllerTest {
 
     @MockBean
     private PhotoRepository photoRepository;
-
-    @BeforeEach
-    public void setup() {
-        mockMvc = MockMvcBuilders
-                .webAppContextSetup(context)
-                .apply(springSecurity())
-                .build();
-    }
 
     @Test
     @WithMockUser
@@ -244,9 +221,9 @@ class UserControllerTest {
 
         Users users = givenUsers();
 
-        when(userRepository.findByEmail(any(String.class))).thenReturn(Optional.of(users));
+        doReturn(users).when(userService).getUser();
 
-        when(userRepository.findById(any(Integer.class))).thenReturn(Optional.empty());
+        when(userRepository.findByEmail(any(String.class))).thenReturn(Optional.empty());
 
         mockMvc.perform(MockMvcRequestBuilders
                         .patch("/users/me")
@@ -279,7 +256,7 @@ class UserControllerTest {
     @Test
     @WithMockUser
     @DisplayName("updateAvatarUser обновить аватарку in файл картинка out status 200")
-    public void updateAvatarUserTest() throws Exception {
+    public void updateAvatarUser200Test() throws Exception {
 
         Users users = givenUsers();
 
@@ -287,7 +264,7 @@ class UserControllerTest {
 
         doReturn(users).when(userService).getUser();
 
-        when(photoRepository.findAvatarByUsersId(users.getId())).thenReturn(Optional.of(photo));
+        when(photoRepository.findPhotoByOwner(users.getTypePhoto(), users.getId())).thenReturn(Optional.of(photo));
 
         when(photoRepository.save(any(Photo.class))).thenReturn(photo);
 
@@ -304,6 +281,29 @@ class UserControllerTest {
 
         fileManager.checkExistFileAndDelete(photo.getFilePath());
 
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("updateAvatarUser обновить аватарку in файл картинка out status 404")
+    public void updateAvatarUser404Test() throws Exception {
+
+        Users users = givenUsers();
+
+        doReturn(users).when(userService).getUser();
+
+        when(photoRepository.findPhotoByOwner(users.getTypePhoto(), users.getId())).thenReturn(Optional.empty());
+
+        byte[] bytes = "test".getBytes();
+
+        MockMultipartFile file =
+                new MockMultipartFile("image", "img.jpg",
+                        MediaType.IMAGE_JPEG.toString(), bytes);
+
+        mockMvc.perform(multipart(HttpMethod.PATCH, "/users/me/image")
+                        .file(file))
+                .andDo(print())
+                .andExpect(status().isNotFound());
     }
 
     @Test

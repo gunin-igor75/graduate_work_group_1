@@ -12,6 +12,9 @@ import ru.skypro.homework.service.UserService;
 
 import java.util.Optional;
 
+/**
+ * Аутентификация и регистрация пользователей
+ */
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -23,7 +26,12 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserMapper mapper;
 
-
+    /**
+     * Проверка логина и пароля
+     * @param userName - email пользователя
+     * @param password - текущий пароль
+     * @return -{@code true} - успех, {@code false} - провал
+     */
     @Override
     public boolean login(String userName, String password) {
         Optional<Users> usersOrEmpty = userService.findUserByEmail(userName);
@@ -34,6 +42,11 @@ public class AuthServiceImpl implements AuthService {
         return encoder.matches(password, user.getPassword());
     }
 
+    /**
+     * Регистрация пользователя
+     * @param registerReq - сущность, содержащая все необходимые данные для регистраии
+     * @return - {@code true} - успех, {@code false} - провал
+     */
     @Override
     public boolean register(RegisterReq registerReq) {
         Optional<Users> usersOrEmpty = userService.findUserByEmail(registerReq.getUsername());

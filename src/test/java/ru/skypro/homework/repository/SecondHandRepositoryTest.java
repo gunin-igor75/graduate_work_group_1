@@ -7,7 +7,6 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -25,7 +24,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Testcontainers
-@TestPropertySource(properties = "spring.sql.init.mode=always")
+@Transactional
+@Sql(scripts = "/data.sql")
 class SecondHandRepositoryTest {
 
     @Autowired
@@ -41,13 +41,18 @@ class SecondHandRepositoryTest {
     private UserRepository userRepository;
 
     @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:14-alpine");
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15.3-alpine")
+            .withDatabaseName("second_hand")
+            .withUsername("user")
+            .withPassword("user")
+            .withInitScript("initdb.sql");
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.datasource.url", postgres::getJdbcUrl);
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
+        registry.add("spring.liquibase.contexts", () -> "!prod");
     }
 
     @Test
@@ -101,31 +106,6 @@ class SecondHandRepositoryTest {
         assertThat(commentSecond.getId()).isEqualTo(null);
     }
 
-    @Test
-    @DisplayName("findAvatarByUsersId - поиск avatar по id users")
-    public void findAvatarByUsersIdTest() {
-        Photo avatarFirst = photoRepository.findAvatarByUsersId(1).orElse(new Photo());
-        assertThat(avatarFirst.getId()).isEqualTo(1);
-        assertThat(avatarFirst.getFilePath()).isEqualTo("avatar\\3c6a9fa9-c9df-45ac-ae65-bff1bfa146a2.jpg");
-        assertThat(avatarFirst.getFileSize()).isEqualTo(259009);
-        assertThat(avatarFirst.getMediaType()).isEqualTo("image/jpeg");
-
-        Photo avatarSecond = photoRepository.findAvatarByUsersId(3).orElse(new Photo());
-        assertThat(avatarSecond.getId()).isEqualTo(null);
-    }
-
-    @Test
-    @DisplayName("findPictureByAdsId - поиск picture по id ads")
-    public void findPictureByAdsIdTest() {
-        Photo pictureFirst = photoRepository.findPictureByAdsId(1).orElse(new Photo());
-        assertThat(pictureFirst.getId()).isEqualTo(2);
-        assertThat(pictureFirst.getFilePath()).isEqualTo("picture\\a915b911-be55-4545-b968-7a7d94e79a28.png");
-        assertThat(pictureFirst.getFileSize()).isEqualTo(136014);
-        assertThat(pictureFirst.getMediaType()).isEqualTo("image/jpeg");
-
-        Photo pictureSecond = photoRepository.findPictureByAdsId(10).orElse(new Photo());
-        assertThat(pictureSecond.getId()).isEqualTo(null);
-    }
 
     @Test
     @DisplayName("findByEmail - поиск users по email")
@@ -138,5 +118,17 @@ class SecondHandRepositoryTest {
 
         Users usersSecond = userRepository.findByEmail("puper@mail.ru").orElse(new Users());
         assertThat(usersSecond.getId()).isEqualTo(null);
+    }
+
+    @Test
+    @DisplayName("findPhotoByOwner - поиск картинки по хозяину in photoType id out photo")
+    public void findPhotoByOwnerTest() {
+        Photo photoFirst = photoRepository.findPhotoByOwner("Picture", 3).orElse(new Photo());
+        assertThat(photoFirst.getId()).isEqualTo(4);
+        assertThat(photoFirst.getFileSize()).isEqualTo(156014);
+        assertThat(photoFirst.getFilePath()).isEqualTo("picture\\a915b911-be55-4545-5555-7a7d94e79a28.png");
+
+        Photo photoSecond = photoRepository.findPhotoByOwner("Avatar", 3).orElse(new Photo());
+        assertThat(photoSecond.getFilePath()).isEqualTo(null);
     }
 }

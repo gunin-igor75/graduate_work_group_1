@@ -2,15 +2,12 @@ package ru.skypro.homework.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONObject;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
@@ -18,11 +15,7 @@ import org.springframework.mock.web.MockPart;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
-import ru.skypro.homework.WebSecurityConfig;
 import ru.skypro.homework.dto.AdsDTO;
 import ru.skypro.homework.dto.CreateAds;
 import ru.skypro.homework.dto.FullAds;
@@ -46,19 +39,11 @@ import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static ru.skypro.homework.util.Value.*;
 
-@SpringBootTest
-@Import(WebSecurityConfig.class)
-class AdsControllerTest {
-
-    @Autowired
-    private WebApplicationContext context;
-
-    private MockMvc mockMvc;
+class AdsControllerTest extends ControllerClassTest{
 
     @SpyBean
     private AdsService adsService;
@@ -89,15 +74,6 @@ class AdsControllerTest {
 
     @Autowired
     private ObjectMapper objectMapper;
-
-
-    @BeforeEach
-    public void setup() {
-        mockMvc = MockMvcBuilders
-                .webAppContextSetup(context)
-                .apply(springSecurity())
-                .build();
-    }
 
     @Test
     @WithAnonymousUser
@@ -256,7 +232,7 @@ class AdsControllerTest {
 
         when(adsRepository.findById(pk)).thenReturn(Optional.of(ads));
 
-        when(photoRepository.findById(pk)).thenReturn(Optional.of(photo));
+        when(photoRepository.findPhotoByOwner(ads.getTypePhoto(), pk)).thenReturn(Optional.of(photo));
 
         when(adsRepository.findAdsByIdAndUsersId(pk, users.getId())).thenReturn(Optional.of(ads));
 
@@ -342,7 +318,7 @@ class AdsControllerTest {
 
         doReturn(users).when(userService).getUser();
 
-        when(photoRepository.findPictureByAdsId(pk)).thenReturn(Optional.of(photo));
+        when(photoRepository.findPhotoByOwner(ads.getTypePhoto(), pk)).thenReturn(Optional.of(photo));
 
         when(photoRepository.save(any(Photo.class))).thenReturn(photo);
 
@@ -378,7 +354,7 @@ class AdsControllerTest {
 
         doReturn(users).when(userService).getUser();
 
-        when(photoRepository.findPictureByAdsId(pk)).thenReturn(Optional.of(photo));
+        when(photoRepository.findPhotoByOwner(ads.getTypePhoto(), pk)).thenReturn(Optional.of(photo));
 
         when(photoRepository.save(any(Photo.class))).thenReturn(photo);
 
@@ -412,7 +388,7 @@ class AdsControllerTest {
 
         doReturn(users).when(userService).getUser();
 
-        when(photoRepository.findPictureByAdsId(pk)).thenReturn(Optional.empty());
+        when(photoRepository.findPhotoByOwner(ads.getTypePhoto(), pk)).thenReturn(Optional.empty());
 
         when(adsRepository.findAdsByIdAndUsersId(pk, users.getId())).thenReturn(Optional.of(ads));
 

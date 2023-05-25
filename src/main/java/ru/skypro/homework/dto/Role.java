@@ -1,6 +1,12 @@
 package ru.skypro.homework.dto;
 
-
+/**
+ * Роли пользователей
+ */
 public enum Role {
-    USER, ADMIN;
+    /** Роль user */
+    USER,
+
+    /** Роль admin */
+    ADMIN;
 }

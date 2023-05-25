@@ -17,11 +17,15 @@ import ru.skypro.homework.repository.UserRepository;
 
 import java.util.Optional;
 
+/**
+ * Класс настройки безопасности приложения
+ */
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfig {
 
+    /** Пути разрешенные без аутентификации */
     private static final String[] AUTH_WHITELIST = {
             "/swagger-resources/**",
             "/swagger-ui.html",
@@ -32,6 +36,12 @@ public class WebSecurityConfig {
             "/image/**"
     };
 
+    /**
+     * Цпочка фильтров определяющих конфигурацию аутентификации пользователя
+     * @param http - сущность для настройки параметров безопасности для http запросов
+     * @return - сущность состоящая из цепочки фильтров, определяющих безопаснсоть
+     * @throws Exception - исключение при не удачном создании цепочки фильтров
+     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http.csrf().disable()
@@ -50,11 +60,21 @@ public class WebSecurityConfig {
                 .build();
     }
 
+    /**
+     * Бин кодера {@code BCryptPasswordEncoder} с силой 12
+     * @return - сущность которая кодирует и декодирует пароли
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(12);
     }
 
+    /**
+     * Поиск пользователя в БД по email
+     * @param userRepository - репозиторий, предназначенн для выполнения операций в БД
+     * @return - сущность, кторая при удачном поиске пользователя попадет в {@code  Authentication}
+     * @throws UsernameNotFoundException - отсутствие пользователя в БД
+     */
     @Bean
     public UserDetailsService userDetailsService(UserRepository userRepository) {
         return email -> {

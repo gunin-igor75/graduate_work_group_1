@@ -18,13 +18,14 @@ import ru.skypro.homework.mapper.UserMapper;
 import ru.skypro.homework.repository.UserRepository;
 import ru.skypro.homework.service.PhotoService;
 import ru.skypro.homework.service.UserService;
-import ru.skypro.homework.util.FileManager;
 
 import javax.transaction.Transactional;
-import java.nio.file.Path;
 import java.util.Optional;
 
 
+/**
+ * Сервис-класс определяющий логику создания, получения, изменения, удаления пользователя в БД
+ */
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -38,20 +39,24 @@ public class UserServiceImpl implements UserService {
 
     private final PasswordEncoder encoder;
 
-    private final FileManager fileManager;
-
-    @Value("${users.avatar.dir.path}")
-    private String directoryAvatar;
-
     @Value("${image.endpoint}")
     private String endpointImage;
 
-
+    /**
+     * Сохранение пользователя в БД
+     * @param user - пользователь
+     */
     @Override
     public void createUsers(Users user) {
         userRepository.save(user);
     }
 
+    /**
+     * Оновление пароля пользователя
+     * @param currentPassword - текущий пароль
+     * @param newPassword - новый пароль
+     * @return - {@code true} - успех,  {@code false} - неудача
+     */
     @Override
     public boolean updatePassword(String currentPassword, String newPassword) {
         Users user = getUser();
@@ -64,10 +69,15 @@ public class UserServiceImpl implements UserService {
         return false;
     }
 
+    /**
+     * Обновление параметров пользователя: имя, фамилия, телефон
+     * @param userDTO - необходимые параметры для обновления пользователя
+     * @return - сущность для отображения пользователя на фронте
+     */
     @Override
     public UserDTO updateUser(UserDTO userDTO) {
-        Integer id = userDTO.getId();
-        Users user = getUserById(id);
+        String email = userDTO.getEmail();
+        Users user = getUsersByEmail(email);
         user.setFirstName(userDTO.getFirstName());
         user.setLastName(userDTO.getLastName());
         user.setPhone(userDTO.getPhone());
@@ -75,39 +85,58 @@ public class UserServiceImpl implements UserService {
         return mapper.userToUserDTO(saveUser);
     }
 
+    /**
+     * Создание или обновление аватарки пользователя в БД
+     * @param file - файл картинки
+     */
     @Override
     @Transactional
     public void createOrUpdateAvatar(MultipartFile file) {
         Users user = getUser();
-        Path filePath = fileManager.getRandomPath(file, directoryAvatar);
-        Photo avatar = photoService.getAvatarByUsersIdOrGetNew(user);
-        String currentFileName = avatar.getFilePath();
-        fileManager.checkExistFileAndDelete(currentFileName);
-        avatar.setFilePath(filePath.toString());
-        avatar.setFileSize(file.getSize());
-        avatar.setMediaType(file.getContentType());
-        Photo photo = photoService.createOrUpdatePhoto(avatar);
-        checkUserAvatarExist(user, photo.getId());
-        fileManager.upLoadFile(file, filePath);
+        if (user.getImage() != null) {
+            photoService.updatePhoto(user, file);
+        } else {
+            Photo photo = photoService.createPhoto(user, file);
+            user.setImage(endpointImage + photo.getId());
+            userRepository.save(user);
+        }
     }
 
+    /**
+     * Получение аутентифицированного пользователя с преобразованием из {@code User} в {@code UserDTO}
+     * @return - аутентифицированный пользователь
+     */
     @Override
     public UserDTO getUserDTO() {
         Users user = getUser();
         return mapper.userToUserDTO(user);
     }
 
+    /**
+     * Получение пользователя по email из БД
+     * @param email - электронная почта пользователя
+     * @return -пользователь либо пусто
+     */
     @Override
     public Optional<Users> findUserByEmail(String email) {
         return userRepository.findByEmail(email);
     }
 
+    /**
+     * Получение аутентифицированного пользователя
+     * @return - аутентифицированный пользователь
+     */
     @Override
     public Users getUser() {
         String userName = getUserName();
         return getUsersByEmail(userName);
     }
 
+    /**
+     * Проверка: изменились ли параметры пользователя
+     * @param userDTO - измененные параметры пользователя
+     * @return - {@code true} - успех,  {@code false} - неудача
+     */
     @Override
     public boolean checkUserUpdate(UserDTO userDTO) {
         Users user = getUser();
@@ -116,6 +145,11 @@ public class UserServiceImpl implements UserService {
                 && user.getPhone().equals(userDTO.getPhone());
     }
 
+    /**
+     * Получение email пользователя, если он прошел аунтетификацию
+     * @return - email пользователя
+     * @throws UsernameNotFoundException пользователя нет в {@code Authentication}
+     */
     private String getUserName() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Object obj = authentication.getPrincipal();
@@ -128,6 +162,12 @@ public class UserServiceImpl implements UserService {
         throw new UsernameNotFoundException(message);
     }
 
+    /**
+     * Получение пользователя по email из БД
+     * @param email - email пользователя
+     * @return - найденный пользователь
+     * @throws UserNotFoundException - щтсутствие пользователя в БД
+     */
     private Users getUsersByEmail(String email) {
         Optional<Users> usersOrNull = findUserByEmail(email);
         if (usersOrNull.isEmpty()) {
@@ -136,21 +176,5 @@ public class UserServiceImpl implements UserService {
             throw new UserNotFoundException(message);
         }
         return usersOrNull.get();
-    }
-
-    private Users getUserById(Integer id) {
-        return userRepository.findById(id).orElseThrow(() -> {
-                    String message = "user with id " + id + " is not in the database";
-                    log.error(message);
-                    return new UserNotFoundException(message);
-                }
-        );
-    }
-
-    private void checkUserAvatarExist(Users user, Integer id) {
-        if (user.getImage() == null) {
-            user.setImage(endpointImage + id);
-            userRepository.save(user);
-        }
     }
 }
