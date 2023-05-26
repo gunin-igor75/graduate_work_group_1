@@ -2,6 +2,7 @@ package ru.skypro.homework.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -35,9 +36,7 @@ public class AdsController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AdsDTO> createAds(@RequestPart(name = "properties") @Valid CreateAds createAds,
                                             @RequestPart(name = "image") MultipartFile file) {
-        if (fileManager.checkFile(file)) {
-            return ResponseEntity.badRequest().build();
-        }
+        fileManager.checkFile(file);
         AdsDTO adsDTO = adsService.createAds(createAds, file);
         return ResponseEntity.status(201).body(adsDTO);
     }
@@ -52,7 +51,7 @@ public class AdsController {
     @PreAuthorize("@customSecurityExpression.canAccessAds(#id)")
     public ResponseEntity<?> deleteAds(@PathVariable int id) {
         adsService.deleteAds(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PatchMapping("{id}")
@@ -73,9 +72,7 @@ public class AdsController {
     @PreAuthorize("@customSecurityExpression.canAccessAds(#id)")
     public ResponseEntity<String> updatePictureAds(@PathVariable int id,
                                                    @RequestPart(name = "image") MultipartFile file) {
-        if (fileManager.checkFile(file)) {
-            return ResponseEntity.badRequest().build();
-        }
+        fileManager.checkFile(file);
         String link = adsService.updatePictureByAds(id, file);
         return ResponseEntity.ok(link);
     }

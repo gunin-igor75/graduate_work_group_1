@@ -12,14 +12,16 @@ import java.util.Objects;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class Comment {
+public class Comment implements Comparable<Comment>{
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(unique = true, nullable = false)
     private Instant createdAt;
 
+    @Column(nullable = false)
     private String text;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -39,5 +41,10 @@ public class Comment {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    @Override
+    public int compareTo(Comment o) {
+        return createdAt.compareTo(o.createdAt);
     }
 }

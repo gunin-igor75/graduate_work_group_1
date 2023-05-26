@@ -13,8 +13,6 @@ public interface CommentService {
 
     void deleteComment(int id);
 
-    void deleteCommentsByAdsId(int adsId);
-
     CommentDTO updateComment(int id, CommentDTO commentDTO);
 
     CommentDTO createComment(int id, CommentDTO commentDTO);

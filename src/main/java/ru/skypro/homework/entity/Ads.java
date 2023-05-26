@@ -1,8 +1,12 @@
 package ru.skypro.homework.entity;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -11,22 +15,31 @@ import java.util.Objects;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class Ads {
+public class Ads implements Comparable<Ads> {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     private String image;
 
-    private  Integer price;
+    @Column(nullable = false)
+    private Integer price;
 
-    private String  title;
+    @Column(unique = true, nullable = false)
+    private String title;
 
+    @Column(unique = true, nullable = false)
     private String description;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Users users;
+
+    @OneToMany(
+            mappedBy = "ads",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
+    private List<Comment> comments;
 
     @Override
     public boolean equals(Object o) {
@@ -39,5 +52,10 @@ public class Ads {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    @Override
+    public int compareTo(Ads o) {
+        return this.title.compareTo(o.title);
     }
 }

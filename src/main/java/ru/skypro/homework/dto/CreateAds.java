@@ -1,6 +1,5 @@
 package ru.skypro.homework.dto;
 
-import lombok.Builder;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 
@@ -8,7 +7,6 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.NotNull;
 
 @Data
-@Builder
 public class CreateAds {
 
     @NotNull(message = "Description must be not null")

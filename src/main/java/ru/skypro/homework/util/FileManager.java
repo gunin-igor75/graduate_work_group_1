@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import ru.skypro.homework.exception_handling.FileCreateAndUpLoadException;
-import ru.skypro.homework.exception_handling.FileNotException;
+import ru.skypro.homework.exception_handling.FileDeleteException;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -18,13 +18,14 @@ import java.util.UUID;
 @Component
 @Slf4j
 public class FileManager {
-    public boolean checkFile(MultipartFile file) {
-        String filename = file.getOriginalFilename();
-        return file.getSize() == 0
-                || filename == null
-                || !Objects.requireNonNull(file.getContentType()).contains("image");
-    }
 
+    public void checkFile(MultipartFile file) {
+        if (isGoodFile(file)) {
+            String message = "file size zero or no picture";
+            log.error(message);
+            throw new FileCreateAndUpLoadException(message);
+        }
+    }
 
     public void checkExistFileAndDelete(String filePath) {
         if (filePath != null) {
@@ -32,7 +33,9 @@ public class FileManager {
             try {
                 Files.deleteIfExists(path);
             } catch (IOException e) {
-                throw new FileNotException();
+                String message = "File path" + filePath + "does not exist";
+                log.error(message);
+                throw new FileDeleteException(message);
             }
         }
     }
@@ -43,8 +46,9 @@ public class FileManager {
             Files.deleteIfExists(filePath);
             Files.write(filePath, file.getBytes());
         } catch (IOException e) {
-            log.error("Error create or upload file");
-            throw new FileCreateAndUpLoadException();
+            String message = "Error create or upload file";
+            log.error(message);
+            throw new FileCreateAndUpLoadException(message);
         }
     }
 
@@ -56,10 +60,19 @@ public class FileManager {
         return Path.of(directory, subsequence + "." + extension);
     }
 
+    private boolean isGoodFile(MultipartFile file) {
+        String filename = file.getOriginalFilename();
+        return file.getSize() == 0
+                || filename == null
+                || !Objects.requireNonNull(file.getContentType()).contains("image");
+    }
+
     private String getExtension(String fileName) {
         if (fileName != null) {
             return fileName.substring(fileName.lastIndexOf(".") + 1);
         }
-        throw new FileNotException();
+        String message = "File is null";
+        log.error(message);
+        throw new FileCreateAndUpLoadException(message);
     }
 }
