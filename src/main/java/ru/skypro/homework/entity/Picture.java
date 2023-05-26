@@ -6,7 +6,9 @@ import lombok.*;
 import javax.persistence.*;
 import java.util.Objects;
 
-
+/**
+ * Картинка для объявления
+ */
 @Getter
 @Setter
 @NoArgsConstructor
@@ -14,6 +16,7 @@ import java.util.Objects;
 @Entity
 public class Picture extends Photo{
 
+    /** Объявление */
     @OneToOne(fetch = FetchType.LAZY)
     private Ads ads;
 

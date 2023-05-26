@@ -5,41 +5,54 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import ru.skypro.homework.dto.Role;
+import ru.skypro.homework.service.OwnerPhoto;
 
 import javax.persistence.*;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Пользователь
+ */
 @Entity
 @Table(name = "users")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Users implements UserDetails {
+@Builder
+public class Users implements UserDetails , OwnerPhoto {
 
+    /** Идентификатор */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    /** Почта пользователя */
     @Column(unique = true, nullable = false)
     private String email;
 
+    /** Имя пользователя */
     @Column(nullable = false)
     private String firstName;
 
+    /** Фамилия Пользователя */
     @Column(nullable = false)
     private String lastName;
 
+    /** Номер телефона пользователя */
     @Column(unique = true, nullable = false)
     private String phone;
 
+    /** Эндпоинт на аватарку */
     private String image;
 
+    /** Пароль пользователя */
     @Column(nullable = false)
     private String password;
 
+    /** Роль пользователя */
     @Enumerated(value = EnumType.STRING)
     private Role role;
 
@@ -84,5 +97,10 @@ public class Users implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    @Override
+    public String getTypePhoto() {
+        return "Avatar";
     }
 }

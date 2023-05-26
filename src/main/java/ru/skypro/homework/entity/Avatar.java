@@ -5,7 +5,9 @@ import lombok.*;
 import javax.persistence.*;
 import java.util.Objects;
 
-
+/**
+ * Аватарка
+ */
 @Getter
 @Setter
 @NoArgsConstructor
@@ -13,6 +15,7 @@ import java.util.Objects;
 @Entity
 public class Avatar extends Photo{
 
+    /** Хозяин аватарки */
     @OneToOne(fetch = FetchType.LAZY)
     private Users users;
 

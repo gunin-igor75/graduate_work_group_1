@@ -1,13 +1,13 @@
 package ru.skypro.homework.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.Objects;
 
+/**
+ * Фото родительский класс для Avatar и Picture
+ */
 @Entity
 @Table(name = "photo")
 @Inheritance
@@ -15,18 +15,23 @@ import java.util.Objects;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Photo {
 
+    /** Идентификатор */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    /** Путь к файлу */
     @Column(nullable = false)
     private String filePath;
 
+    /** mediaType файла*/
     @Column(nullable = false)
     private String mediaType;
 
+    /*** Размер файла */
     @Column(nullable = false)
     private long fileSize;
 

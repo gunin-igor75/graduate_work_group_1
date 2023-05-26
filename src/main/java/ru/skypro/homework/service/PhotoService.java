@@ -1,16 +1,19 @@
 package ru.skypro.homework.service;
 
+import org.springframework.web.multipart.MultipartFile;
 import ru.skypro.homework.entity.Photo;
 import ru.skypro.homework.entity.Users;
+
+import javax.transaction.Transactional;
 
 public interface PhotoService {
     Photo getPhoto(int id);
 
-    Photo getAvatarByUsersIdOrGetNew(Users users);
-
-    Photo createOrUpdatePhoto(Photo photo);
-
-    Photo getPictureByAdsId(int adsId);
-
     void deletePhoto(Photo photo);
+
+    Photo createPhoto(Photo photo, MultipartFile file);
+
+    void updatePhoto(OwnerPhoto owner, MultipartFile file);
+
+    Photo getPhotoByOwner(String typeOwner, Integer id);
 }
