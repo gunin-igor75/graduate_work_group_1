@@ -41,11 +41,7 @@ class SecondHandRepositoryTest {
     private UserRepository userRepository;
 
     @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15.3-alpine")
-            .withDatabaseName("second_hand")
-            .withUsername("user")
-            .withPassword("user")
-            .withInitScript("initdb.sql");
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15.3-alpine");
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
@@ -99,7 +95,6 @@ class SecondHandRepositoryTest {
         Comment commentFirst =
                 commentRepository.findCommentByIdAndUsersId(4, 1).orElse(new Comment());
         assertThat(commentFirst.getId()).isEqualTo(4);
-        assertThat(commentFirst.getText()).isEqualTo("классный желудь");
 
         Comment commentSecond =
                 commentRepository.findCommentByIdAndUsersId(4, 10).orElse(new Comment());

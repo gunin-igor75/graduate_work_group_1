@@ -11,7 +11,7 @@ public interface PhotoService {
 
     void deletePhoto(Photo photo);
 
-    Photo createPhoto(OwnerPhoto owner, MultipartFile file);
+    Photo createPhoto(Photo photo, MultipartFile file);
 
     void updatePhoto(OwnerPhoto owner, MultipartFile file);
 

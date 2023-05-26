@@ -11,7 +11,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import ru.skypro.homework.dto.UserDTO;
+import ru.skypro.homework.entity.Avatar;
 import ru.skypro.homework.entity.Photo;
+import ru.skypro.homework.entity.Picture;
 import ru.skypro.homework.entity.Users;
 import ru.skypro.homework.exception_handling.UserNotFoundException;
 import ru.skypro.homework.mapper.UserMapper;
@@ -96,7 +98,8 @@ public class UserServiceImpl implements UserService {
         if (user.getImage() != null) {
             photoService.updatePhoto(user, file);
         } else {
-            Photo photo = photoService.createPhoto(user, file);
+            Avatar avatar = new Avatar(user);
+            Photo photo = photoService.createPhoto(avatar, file);
             user.setImage(endpointImage + photo.getId());
             userRepository.save(user);
         }

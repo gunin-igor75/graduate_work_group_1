@@ -11,6 +11,7 @@ import ru.skypro.homework.dto.FullAds;
 import ru.skypro.homework.dto.ResponseWrapperAds;
 import ru.skypro.homework.entity.Ads;
 import ru.skypro.homework.entity.Photo;
+import ru.skypro.homework.entity.Picture;
 import ru.skypro.homework.entity.Users;
 import ru.skypro.homework.exception_handling.AdsNotFoundException;
 import ru.skypro.homework.mapper.AdsMapper;
@@ -69,13 +70,14 @@ public class AdsServiceImp implements AdsService {
     @Override
     @Transactional
     public AdsDTO createAds(CreateAds createAds, MultipartFile file) {
-        Ads owner = mapper.createAdsToAds(createAds);
+        Ads ads = mapper.createAdsToAds(createAds);
         Users user = userService.getUser();
-        Photo photo = photoService.createPhoto(owner, file);
-        owner.setUsers(user);
-        owner.setImage(endpointImage + photo.getId());
-        Ads ads  = adsRepository.save(owner);
-        return mapper.adsToAdsDTO(ads);
+        Picture picture = new Picture(ads);
+        Photo photo = photoService.createPhoto(picture, file);
+        ads.setUsers(user);
+        ads.setImage(endpointImage + photo.getId());
+        Ads persistentAds  = adsRepository.save(ads);
+        return mapper.adsToAdsDTO(persistentAds);
     }
 
     /**

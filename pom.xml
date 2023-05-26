@@ -14,7 +14,7 @@
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
     <version>2.7.10</version>
-    <relativePath/> <!-- lookup parent from repository -->
+    <relativePath/>
   </parent>
 
   <properties>
@@ -24,6 +24,8 @@
     <hibernate.validation.version>8.0.0.Final</hibernate.validation.version>
     <jakarta.validation.version>3.0.2</jakarta.validation.version>
     <appache.common.lang.version>3.12.0</appache.common.lang.version>
+    <testcontainer.junit.version>1.18.1</testcontainer.junit.version>
+    <testcontainer.postgresql.version>1.18.1</testcontainer.postgresql.version>
   </properties>
 
   <dependencies>
@@ -46,12 +48,6 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-validation</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.h2database</groupId>
-      <artifactId>h2</artifactId>
-      <scope>runtime</scope>
     </dependency>
 
     <dependency>
@@ -96,11 +92,6 @@
     </dependency>
 
     <dependency>
-      <groupId>com.h2database</groupId>
-      <artifactId>h2</artifactId>
-    </dependency>
-
-    <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
       <version>${appache.common.lang.version}</version>
@@ -110,14 +101,14 @@
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>junit-jupiter</artifactId>
-      <version>1.18.1</version>
+      <version>${testcontainer.junit.version}</version>
       <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>postgresql</artifactId>
-      <version>1.18.1</version>
+      <version>${testcontainer.postgresql.version}</version>
       <scope>test</scope>
     </dependency>
 

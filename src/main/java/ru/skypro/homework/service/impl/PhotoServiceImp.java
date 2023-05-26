@@ -79,14 +79,13 @@ public class PhotoServiceImp implements PhotoService {
 
     /**
      * Создание картинки
-     * @param owner - хозяин картинки
+     * @param photo - картинка
      * @param file - файл картинки
      * @return - сохраненная картинка в БД
      */
     @Override
     @Transactional
-    public Photo createPhoto(OwnerPhoto owner, MultipartFile file) {
-        Photo photo = from(owner);
+    public Photo createPhoto(Photo photo, MultipartFile file) {
         String filePath = downLoadFile(photo, file);
         return correctedPhoto(photo,file,filePath);
     }
@@ -131,20 +130,5 @@ public class PhotoServiceImp implements PhotoService {
         photo.setFileSize(file.getSize());
         photo.setMediaType(file.getContentType());
         return photoRepository.save(photo);
-    }
-
-    /**
-     * Получение картинки изходя из хозяина
-     * @param owner - хозяин картинки
-     * @return - картинка содержащая хозяина
-     */
-    private Photo from(OwnerPhoto owner) {
-        String typePhoto = owner.getTypePhoto();
-        if (typePhoto.equals("Avatar")) {
-            Users users = (Users) owner;
-            return new Avatar(users);
-        }
-        Ads ads = (Ads) owner;
-        return new Picture(ads);
     }
 }
