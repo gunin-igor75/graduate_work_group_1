@@ -18,6 +18,7 @@ public class SecondHandGlobalExceptionHandler {
 
     /**
      * Перехватчик исключения {@code FileDeleteException}
+     *
      * @param e - исключение при удалении файла
      * @return - обертка с удобной формы восприятия исключения на фронте
      */
@@ -29,6 +30,7 @@ public class SecondHandGlobalExceptionHandler {
 
     /**
      * Перехватчик исключения {@code FileCreateAndUpLoadException}
+     *
      * @param e - исключение при создании и скачивании файла
      * @return - обертка с удобной формы восприятия исключения на фронте
      */
@@ -39,51 +41,23 @@ public class SecondHandGlobalExceptionHandler {
     }
 
     /**
-     * Перехватчик исключения {@code UserNotFoundException}
-     * @param e - исключение при отсутствие пользователя
+     * Перехватчик исключения {@code UserNotFoundException}, {@code AdsNotFoundException}
+     * {@code CommentNotFoundException}, {@code PhotoNotFoundException}
+     * @param e - исключение при отсутствие пользователя, объявления, коментарияб картинки
      * @return - обертка с удобной формы восприятия исключения на фронте
      */
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ExceptionBody> handlerUserNotFound(UserNotFoundException e) {
-        ExceptionBody exceptionBody = new ExceptionBody(e.getMessage());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exceptionBody);
-    }
-
-    /**
-     * Перехватчик исключения {@code AdsNotFoundException}
-     * @param e - исключение при отсутствие объявления
-     * @return - обертка с удобной формы восприятия исключения на фронте
-     */
-    @ExceptionHandler(AdsNotFoundException.class)
-    public ResponseEntity<ExceptionBody> handlerAdsException(AdsNotFoundException e) {
-        ExceptionBody exceptionBody = new ExceptionBody(e.getMessage());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exceptionBody);
-    }
-
-    /**
-     * Перехватчик исключения {@code CommentNotFoundException}
-     * @param e - исключение при отсутствие коментария
-     * @return - обертка с удобной формы восприятия исключения на фронте
-     */
-    @ExceptionHandler(CommentNotFoundException.class)
-    public ResponseEntity<ExceptionBody> handlerCommentException(CommentNotFoundException e) {
-        ExceptionBody exceptionBody = new ExceptionBody(e.getMessage());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exceptionBody);
-    }
-
-    /**
-     * Перехватчик исключения {@code PhotoNotFoundException}
-     * @param e - исключение при отсутствие картинки
-     * @return - обертка с удобной формы восприятия исключения на фронте
-     */
-    @ExceptionHandler(PhotoNotFoundException.class)
-    public ResponseEntity<ExceptionBody> handlerPhotoException(PhotoNotFoundException e) {
+    @ExceptionHandler({UserNotFoundException.class,
+                    AdsNotFoundException.class,
+                    CommentNotFoundException.class,
+                    PhotoNotFoundException.class})
+    public ResponseEntity<ExceptionBody> handlerUserNotFound(RuntimeException e) {
         ExceptionBody exceptionBody = new ExceptionBody(e.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exceptionBody);
     }
 
     /**
      * Перехватчик исключения {@code MethodArgumentNotValidException}
+     *
      * @param e - исключение при нарушении условий валидации входных данных
      * @return - обертка с удобной формы восприятия исключения на фронте
      */
