@@ -1,9 +1,7 @@
 package ru.skypro.homework.controller;
 
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -30,15 +28,18 @@ public class PhotoController {
 
     private final PhotoService photoService;
 
-    @GetMapping(value = "{id}", produces = "image/*")
+    @GetMapping(value = "{id}",
+            produces = {
+                    MediaType.IMAGE_PNG_VALUE,
+                    MediaType.IMAGE_JPEG_VALUE,
+                    MediaType.IMAGE_GIF_VALUE,
+                    MediaType.APPLICATION_OCTET_STREAM_VALUE
+            })
     public ResponseEntity<byte[]> downLoadImage(@PathVariable("id") int id) {
         Photo photo = photoService.getPhoto(id);
         Path path = Paths.get(photo.getFilePath());
         byte[] bytes = getBytes(path);
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.parseMediaType(photo.getMediaType()));
-        headers.setContentLength(photo.getFileSize());
-        return ResponseEntity.status(HttpStatus.OK).headers(headers).body(bytes);
+        return ResponseEntity.status(HttpStatus.OK).body(bytes);
     }
 
     private byte[] getBytes(Path path) {
