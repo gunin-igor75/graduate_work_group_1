@@ -5,6 +5,7 @@ import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -22,6 +23,7 @@ public class CreateAds {
     /** Стоимость объявления */
     @NotNull(message = "Price must be not null")
     @Max(Integer.MAX_VALUE)
+    @Min(0)
     private Integer price;
 
     /** Название объяления */
