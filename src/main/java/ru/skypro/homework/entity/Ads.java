@@ -1,37 +1,45 @@
 package ru.skypro.homework.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import ru.skypro.homework.service.OwnerPhoto;
 
 import javax.persistence.*;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Объявление
+ */
 @Entity
 @Table(name = "ads")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Ads implements Comparable<Ads> {
+@Builder
+public class Ads implements Comparable<Ads>, OwnerPhoto {
 
+    /** Индентификатор */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    /** Эндпоинт */
     private String image;
 
+    /** Стоимость */
     @Column(nullable = false)
     private Integer price;
 
+    /** Название */
     @Column(unique = true, nullable = false)
     private String title;
 
+    /** Щписание */
     @Column(unique = true, nullable = false)
     private String description;
 
+    /** Хозяин объявления */
     @ManyToOne(fetch = FetchType.LAZY)
     private Users users;
 
@@ -57,5 +65,10 @@ public class Ads implements Comparable<Ads> {
     @Override
     public int compareTo(Ads o) {
         return this.title.compareTo(o.title);
+    }
+
+    @Override
+    public String getTypePhoto() {
+        return "Picture";
     }
 }

@@ -14,19 +14,32 @@ import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * Утилитный класс для работы с файлами
+ */
 @RequiredArgsConstructor
 @Component
 @Slf4j
 public class FileManager {
 
+    /**
+     * Проверка файла (размер и contentType)
+     * @param file - файл картинки
+     * @throws FileCreateAndUpLoadException - не соответствие нужным параметрам
+     */
     public void checkFile(MultipartFile file) {
-        if (isGoodFile(file)) {
+        if (isBadFile(file)) {
             String message = "file size zero or no picture";
             log.error(message);
             throw new FileCreateAndUpLoadException(message);
         }
     }
 
+    /**
+     * Проверка и удаление файла
+     * @param filePath - путь к файлу
+     * @throws FileDeleteException - исключение при удалении файла
+     */
     public void checkExistFileAndDelete(String filePath) {
         if (filePath != null) {
             Path path = Paths.get(filePath);
@@ -40,6 +53,12 @@ public class FileManager {
         }
     }
 
+    /**
+     * Скачивание файла
+     * @param file - файл картинки
+     * @param filePath - путь куда скачивается файл
+     * @throws FileCreateAndUpLoadException - нецдачное сохранение файла
+     */
     public void upLoadFile(MultipartFile file, Path filePath) {
         try {
             Files.createDirectories(filePath.getParent());
@@ -52,6 +71,12 @@ public class FileManager {
         }
     }
 
+    /**
+     * Создание случайного имени файла
+     * @param file - файл картинки
+     * @param directory - директория где файл будет находиться
+     * @return - путь, где находится сохраненный файл
+     */
     public Path getRandomPath(MultipartFile file, String directory) {
         UUID uuid = UUID.randomUUID();
         String subsequence = uuid.toString();
@@ -60,13 +85,26 @@ public class FileManager {
         return Path.of(directory, subsequence + "." + extension);
     }
 
-    private boolean isGoodFile(MultipartFile file) {
+    /**
+     * Проверка файла на требуемы параметры:
+     * не нулевой размер
+     * не {@code null}
+     * contentType - image
+     * @param file - файл картинки
+     * @return - {@code true} - плохой файл,  {@code false} - хорошый файл
+     */
+    private boolean isBadFile(MultipartFile file) {
         String filename = file.getOriginalFilename();
         return file.getSize() == 0
                 || filename == null
                 || !Objects.requireNonNull(file.getContentType()).contains("image");
     }
 
+    /**
+     * Извлечение расширеня файла
+     * @param fileName - имя файла с расширением
+     * @return - расширение файла
+     */
     private String getExtension(String fileName) {
         if (fileName != null) {
             return fileName.substring(fileName.lastIndexOf(".") + 1);

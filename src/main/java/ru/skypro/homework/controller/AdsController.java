@@ -23,6 +23,7 @@ import javax.validation.Valid;
 @RequestMapping("/ads")
 @Validated
 public class AdsController {
+
     private final AdsService adsService;
 
     private final FileManager fileManager;

@@ -6,27 +6,36 @@ import javax.persistence.*;
 import java.time.Instant;
 import java.util.Objects;
 
+/***
+ * Коментарий
+ */
 @Entity
 @Table(name = "comment")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Comment implements Comparable<Comment>{
 
+    /** Идентификатор */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    /** Дата создания коментария*/
     @Column(unique = true, nullable = false)
     private Instant createdAt;
 
+    /** Текст коментария */
     @Column(nullable = false)
     private String text;
 
+    /** Объявление коментария */
     @ManyToOne(fetch = FetchType.LAZY)
     private Ads ads;
 
+    /** Хозяин коментария */
     @ManyToOne(fetch = FetchType.LAZY)
     private Users users;
 

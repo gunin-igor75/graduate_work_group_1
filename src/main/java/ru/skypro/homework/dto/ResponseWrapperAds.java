@@ -4,12 +4,18 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.util.Collection;
+import java.util.List;
 
+/**
+ * Обертка коллекции объявлений
+ */
 @Data
 @Builder
 public class ResponseWrapperAds {
 
+    /** Количество объявлений */
     private Integer count;
 
-    private Collection<AdsDTO> results;
+    /** Коллекция объявлений */
+    private List<AdsDTO> results;
 }

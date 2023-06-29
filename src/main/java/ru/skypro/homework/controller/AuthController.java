@@ -37,10 +37,10 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody RegisterReq req) {
-        Role role = req.getRole() == null ? USER : req.getRole();
-        req.setRole(role);
-        if (authService.register(req)) {
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterReq registerReq) {
+        Role role = registerReq.getRole() == null ? USER : registerReq.getRole();
+        registerReq.setRole(role);
+        if (authService.register(registerReq)) {
             return ResponseEntity.status(HttpStatus.CREATED).build();
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
